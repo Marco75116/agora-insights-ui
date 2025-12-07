@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LogOut } from "lucide-react";
+import { Home, LogOut, Zap } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 import {
@@ -21,6 +21,11 @@ const navigationItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "API Demo",
+    url: "/dashboard/api-demo",
+    icon: Zap,
   },
 ];
 
