@@ -1,5 +1,14 @@
 # Project Directives
 
+## Design Philosophy
+
+**PROFESSIONAL. CLEAN. SOBER.**
+
+- No unnecessary animations
+- Focus on data clarity and usability
+- Institutional-grade interface
+- Performance-first approach
+
 ## Branch Naming
 
 Use format: `type/brief-description`
@@ -43,11 +52,20 @@ Follow the shadcn/ui pattern:
 ## File Organization
 
 - `/components/ui/` - shadcn/ui base components
-- `/components/[feature]/` - feature-specific components
+- `/components/[feature]/` - feature-specific components (analytics/, layout/, shared/)
 - `/hooks/` - custom React hooks
 - `/types/` - TypeScript type definitions
 - `/lib/` - utility functions
+- `/lib/helpers/` - helper functions (formatting, date utilities, validation)
+- `/lib/services/` - service layer for external APIs and data sources
 - `/constants/` - application constants
+
+## File Naming
+
+- Components: PascalCase (`Button.tsx`)
+- Services: camelCase.service.ts (`clickhouse.service.ts`)
+- Utilities: camelCase.ts (`formatters.ts`)
+- Types: PascalCase.ts (`Pool.ts`)
 
 ## Package Manager
 
@@ -92,3 +110,33 @@ Ask before installing new dependencies.
 
 - Never hardcode secrets or API keys
 - Validate user inputs
+- All queries to external services must use environment variables
+
+## Data Fetching
+
+- Use TanStack React Query for client-side caching and state
+- Server Components for read operations when possible
+- Always use parameterized queries for database calls
+- Type all API/query responses with TypeScript interfaces
+- Handle loading, error, and empty states
+
+## Performance
+
+- Use dynamic imports for large components (code splitting)
+- Use `React.memo` for expensive renders
+- Implement skeleton screens for loading states
+
+## Charts & Data Visualization
+
+- Responsive design - adapt to viewport size
+- Clear configuration - labeled axes, legends
+- Loading states - skeleton screens during fetch
+- Data formatting - proper decimals and units
+- Consistent color scheme throughout
+
+## Error Handling
+
+- User-friendly error messages
+- Graceful degradation
+- Wrap async operations in try-catch
+- Implement error boundaries for component failures
