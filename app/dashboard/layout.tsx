@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { usePathname } from "next/navigation";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
@@ -39,18 +40,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {breadcrumbs.map((crumb, index) => {
                   const isLast = index === breadcrumbs.length - 1;
                   return (
-                    <BreadcrumbItem key={crumb.href}>
-                      {isLast ? (
-                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                      ) : (
-                        <>
+                    <React.Fragment key={crumb.href}>
+                      <BreadcrumbItem>
+                        {isLast ? (
+                          <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                        ) : (
                           <BreadcrumbLink href={crumb.href} className="hidden md:block">
                             {crumb.label}
                           </BreadcrumbLink>
-                          <BreadcrumbSeparator className="hidden md:block" />
-                        </>
-                      )}
-                    </BreadcrumbItem>
+                        )}
+                      </BreadcrumbItem>
+                      {!isLast && <BreadcrumbSeparator className="hidden md:block" />}
+                    </React.Fragment>
                   );
                 })}
               </BreadcrumbList>
