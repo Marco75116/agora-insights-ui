@@ -1,5 +1,4 @@
 import { Elysia, t } from "elysia";
-import clickhouseClient from "@/lib/clients/clickhouse.client";
 import {
   getAusdMetrics,
   getTransferStatsDaily,
@@ -9,20 +8,6 @@ import { getWalletBalanceData } from "@/lib/services/wallet.service";
 import { SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
 const app = new Elysia({ prefix: "/api" })
-  .get("/hello", () => ({ message: "Hello from Elysia!" }))
-  .get("/clickhouse/health", async () => {
-    try {
-      const result = await clickhouseClient.query({
-        query: "SELECT version() as version",
-        format: "JSONEachRow",
-      });
-      const data = (await result.json()) as Array<{ version: string }>;
-      return { status: "ok", version: data[0].version };
-    } catch (error) {
-      console.error("ClickHouse error:", error);
-      return { status: "error", message: String(error) };
-    }
-  })
   .get("/ausd/overview", async () => {
     try {
       const metrics = await getAusdMetrics();
@@ -90,10 +75,6 @@ const app = new Elysia({ prefix: "/api" })
       }),
     }
   )
-  .get("/users", () => [
-    { id: 1, name: "Alice" },
-    { id: 2, name: "Bob" },
-  ])
   .get("/wallet/:address", async ({ params }) => {
     try {
       const data = await getWalletBalanceData(params.address);
