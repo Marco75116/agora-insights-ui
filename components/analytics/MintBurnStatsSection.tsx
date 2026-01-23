@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMintBurnStats } from "@/hooks/useMintBurnStats";
 import { MintBurnStatsChart } from "@/components/analytics/MintBurnStatsChart";
+import { CollapsibleChartSection } from "@/components/analytics/CollapsibleChartSection";
 import {
   Select,
   SelectContent,
@@ -66,65 +67,71 @@ export function MintBurnStatsSection({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-4">
-        <Select
-          value={months.toString()}
-          onValueChange={(value) => updateParams("mintBurnMonths", value)}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTH_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <CollapsibleChartSection
+      title="Mint & Burn Statistics"
+      description="Daily mint and burn activity"
+      defaultOpen
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Select
+            value={months.toString()}
+            onValueChange={(value) => updateParams("mintBurnMonths", value)}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTH_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={chainId?.toString() ?? "all"}
-          onValueChange={(value) => updateParams("mintBurnChainId", value)}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All chains" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All chains</SelectItem>
-            {SUPPORTED_CHAIN_IDS.map((id) => (
-              <SelectItem key={id} value={id.toString()}>
-                {CHAINS[id].name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <Select
+            value={chainId?.toString() ?? "all"}
+            onValueChange={(value) => updateParams("mintBurnChainId", value)}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All chains" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All chains</SelectItem>
+              {SUPPORTED_CHAIN_IDS.map((id) => (
+                <SelectItem key={id} value={id.toString()}>
+                  {CHAINS[id].name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {isLoading ? (
-          <>
-            <ChartSkeleton />
-            <ChartSkeleton />
-            <ChartSkeleton />
-            <ChartSkeleton />
-          </>
-        ) : error ? (
-          <p className="text-destructive col-span-2">
-            Failed to load mint/burn stats: {error.message}
-          </p>
-        ) : mintBurnStats?.stats && mintBurnStats.stats.length > 0 ? (
-          <>
-            <MintBurnStatsChart data={mintBurnStats.stats} metric="mint" type="count" />
-            <MintBurnStatsChart data={mintBurnStats.stats} metric="mint" type="volume" />
-            <MintBurnStatsChart data={mintBurnStats.stats} metric="burn" type="count" />
-            <MintBurnStatsChart data={mintBurnStats.stats} metric="burn" type="volume" />
-          </>
-        ) : (
-          <p className="text-muted-foreground col-span-2">No mint/burn data available</p>
-        )}
+        <div className="grid gap-4 md:grid-cols-2">
+          {isLoading ? (
+            <>
+              <ChartSkeleton />
+              <ChartSkeleton />
+              <ChartSkeleton />
+              <ChartSkeleton />
+            </>
+          ) : error ? (
+            <p className="text-destructive col-span-2">
+              Failed to load mint/burn stats: {error.message}
+            </p>
+          ) : mintBurnStats?.stats && mintBurnStats.stats.length > 0 ? (
+            <>
+              <MintBurnStatsChart data={mintBurnStats.stats} metric="mint" type="count" />
+              <MintBurnStatsChart data={mintBurnStats.stats} metric="mint" type="volume" />
+              <MintBurnStatsChart data={mintBurnStats.stats} metric="burn" type="count" />
+              <MintBurnStatsChart data={mintBurnStats.stats} metric="burn" type="volume" />
+            </>
+          ) : (
+            <p className="text-muted-foreground col-span-2">No mint/burn data available</p>
+          )}
+        </div>
       </div>
-    </div>
+    </CollapsibleChartSection>
   );
 }
