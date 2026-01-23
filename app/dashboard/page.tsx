@@ -1,21 +1,29 @@
-"use client";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { AddressSearchCard } from "@/components/wallet/AddressSearchCard";
+import { AnalyticsCard } from "@/components/dashboard/AnalyticsCard";
 
-import { useSession } from "@/lib/auth-client";
-
-export default function DashboardPage() {
-  const { data: session, isPending } = useSession();
-
-  if (isPending) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+export default async function DashboardPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Welcome back, {session?.user?.name || "User"}</h1>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex w-full max-w-2xl flex-col items-center gap-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Welcome back, {session?.user?.name || "User"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Monitor AUSD balances and analytics across chains
+          </p>
+        </div>
+        <div className="flex w-full max-w-md flex-col gap-4">
+          <AddressSearchCard />
+          <AnalyticsCard />
+        </div>
+      </div>
     </div>
   );
 }
