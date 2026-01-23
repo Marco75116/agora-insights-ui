@@ -1,6 +1,11 @@
 import clickhouseClient from "@/lib/clients/clickhouse.client";
 import { AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
-import type { ChainMetrics, AusdOverviewMetrics } from "@/types/Analytics";
+import type {
+  ChainMetrics,
+  AusdOverviewMetrics,
+  DailyTransferStats,
+  TransferStatsResponse,
+} from "@/types/Analytics";
 
 interface SupplyResult {
   chain_id: number;
@@ -122,5 +127,62 @@ export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
     chainId,
     totalSupply: supply[0]?.total_supply ?? "0",
     holdersCount: parseInt(holders[0]?.holders_count ?? "0", 10),
+  };
+}
+
+interface TransferStatsResult {
+  date: string;
+  transfer_count: string;
+  volume: string;
+}
+
+export interface TransferStatsFilter {
+  months?: number;
+  chainId?: ChainId;
+}
+
+export async function getTransferStatsDaily(
+  filter: TransferStatsFilter = {}
+): Promise<TransferStatsResponse> {
+  const { months = 1, chainId } = filter;
+  const days = months * 30;
+
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        toString(day) as date,
+        toString(sum(transfer_count)) as transfer_count,
+        toString(sum(volume)) as volume
+      FROM (
+        SELECT date as day, transfer_count, volume
+        FROM transfer_stats_daily FINAL
+        WHERE token_address = {tokenAddress:FixedString(42)}
+          AND date >= today() - {days:UInt32}
+          ${chainCondition}
+      )
+      GROUP BY day
+      ORDER BY day ASC
+    `,
+    query_params: {
+      tokenAddress: AUSD_ADDRESS_LOWER,
+      days,
+      ...(chainId && { chainId }),
+    },
+    format: "JSONEachRow",
+  });
+
+  const data = (await result.json()) as TransferStatsResult[];
+
+  const stats: DailyTransferStats[] = data.map((row) => ({
+    date: row.date,
+    transferCount: parseInt(row.transfer_count, 10),
+    volume: row.volume,
+  }));
+
+  return {
+    stats,
+    lastUpdated: new Date().toISOString(),
   };
 }
