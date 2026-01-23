@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Home, Zap } from "lucide-react";
+import { BarChart3, Home } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -24,11 +24,6 @@ const navigationItems = [
     title: "AUSD Analytics",
     url: "/dashboard/ausd-analytics",
     icon: BarChart3,
-  },
-  {
-    title: "API Demo",
-    url: "/dashboard/api-demo",
-    icon: Zap,
   },
 ];
 
