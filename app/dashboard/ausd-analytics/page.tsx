@@ -6,6 +6,7 @@ import { MetricCard } from "@/components/analytics/MetricCard";
 import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
 import { TransferStatsSection } from "@/components/analytics/TransferStatsSection";
+import { MintBurnStatsSection } from "@/components/analytics/MintBurnStatsSection";
 import { CHAINS, AUSD_DECIMALS } from "@/constants/chains";
 import { formatTokenAmount, formatNumber } from "@/lib/helpers/formatters";
 import { Coins, Users } from "lucide-react";
@@ -109,6 +110,10 @@ export default function AusdAnalyticsPage() {
 
       <Suspense fallback={<TransferStatsFallback />}>
         <TransferStatsSection />
+      </Suspense>
+
+      <Suspense fallback={<TransferStatsFallback />}>
+        <MintBurnStatsSection />
       </Suspense>
 
       {data?.lastUpdated && (

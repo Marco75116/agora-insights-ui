@@ -29,3 +29,16 @@ export interface TransferStatsResponse {
   stats: DailyTransferStats[];
   lastUpdated: string;
 }
+
+export interface DailyMintBurnStats {
+  date: string;
+  mintCount: number;
+  mintVolume: string;
+  burnCount: number;
+  burnVolume: string;
+}
+
+export interface MintBurnStatsResponse {
+  stats: DailyMintBurnStats[];
+  lastUpdated: string;
+}
