@@ -5,6 +5,8 @@ import type {
   AusdOverviewMetrics,
   DailyTransferStats,
   TransferStatsResponse,
+  DailyMintBurnStats,
+  MintBurnStatsResponse,
 } from "@/types/Analytics";
 
 interface SupplyResult {
@@ -179,6 +181,69 @@ export async function getTransferStatsDaily(
     date: row.date,
     transferCount: parseInt(row.transfer_count, 10),
     volume: row.volume,
+  }));
+
+  return {
+    stats,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+interface MintBurnStatsResult {
+  date: string;
+  mint_count: string;
+  mint_volume: string;
+  burn_count: string;
+  burn_volume: string;
+}
+
+export interface MintBurnStatsFilter {
+  months?: number;
+  chainId?: ChainId;
+}
+
+export async function getMintBurnStatsDaily(
+  filter: MintBurnStatsFilter = {}
+): Promise<MintBurnStatsResponse> {
+  const { months = 1, chainId } = filter;
+  const days = months * 30;
+
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        toString(day) as date,
+        toString(sum(mint_count)) as mint_count,
+        toString(sum(mint_volume)) as mint_volume,
+        toString(sum(burn_count)) as burn_count,
+        toString(sum(burn_volume)) as burn_volume
+      FROM (
+        SELECT date as day, mint_count, mint_volume, burn_count, burn_volume
+        FROM mint_burn_daily FINAL
+        WHERE token_address = {tokenAddress:FixedString(42)}
+          AND date >= today() - {days:UInt32}
+          ${chainCondition}
+      )
+      GROUP BY day
+      ORDER BY day ASC
+    `,
+    query_params: {
+      tokenAddress: AUSD_ADDRESS_LOWER,
+      days,
+      ...(chainId && { chainId }),
+    },
+    format: "JSONEachRow",
+  });
+
+  const data = (await result.json()) as MintBurnStatsResult[];
+
+  const stats: DailyMintBurnStats[] = data.map((row) => ({
+    date: row.date,
+    mintCount: parseInt(row.mint_count, 10),
+    mintVolume: row.mint_volume,
+    burnCount: parseInt(row.burn_count, 10),
+    burnVolume: row.burn_volume,
   }));
 
   return {
