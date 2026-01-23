@@ -18,3 +18,14 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
 }
+
+export interface DailyTransferStats {
+  date: string;
+  transferCount: number;
+  volume: string;
+}
+
+export interface TransferStatsResponse {
+  stats: DailyTransferStats[];
+  lastUpdated: string;
+}

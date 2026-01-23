@@ -1,12 +1,44 @@
 "use client";
 
+import { Suspense } from "react";
 import { useAusdMetrics } from "@/hooks/useAusdMetrics";
 import { MetricCard } from "@/components/analytics/MetricCard";
 import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
+import { TransferStatsSection } from "@/components/analytics/TransferStatsSection";
 import { CHAINS, AUSD_DECIMALS } from "@/constants/chains";
 import { formatTokenAmount, formatNumber } from "@/lib/helpers/formatters";
 import { Coins, Users } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+function ChartSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-5 w-32" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-[300px] w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function TransferStatsFallback() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4">
+        <Skeleton className="h-10 w-[160px]" />
+        <Skeleton className="h-10 w-[160px]" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <ChartSkeleton />
+        <ChartSkeleton />
+      </div>
+    </div>
+  );
+}
 
 export default function AusdAnalyticsPage() {
   const { data, isLoading, error } = useAusdMetrics();
@@ -74,6 +106,10 @@ export default function AusdAnalyticsPage() {
           <ChainBreakdownChart data={data.chainBreakdown} metric="holders" />
         </div>
       )}
+
+      <Suspense fallback={<TransferStatsFallback />}>
+        <TransferStatsSection />
+      </Suspense>
 
       {data?.lastUpdated && (
         <p className="text-muted-foreground text-xs">
