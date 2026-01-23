@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import clickhouseClient from "@/lib/clients/clickhouse.client";
 import { getAusdMetrics, getTransferStatsDaily } from "@/lib/services/ausd.service";
+import { getWalletBalanceData } from "@/lib/services/wallet.service";
 import { SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
 const app = new Elysia({ prefix: "/api" })
@@ -59,7 +60,15 @@ const app = new Elysia({ prefix: "/api" })
   .get("/users", () => [
     { id: 1, name: "Alice" },
     { id: 2, name: "Bob" },
-  ]);
+  ])
+  .get("/wallet/:address", async ({ params }) => {
+    try {
+      const data = await getWalletBalanceData(params.address);
+      return { status: "ok", data };
+    } catch (error) {
+      return { status: "error", message: String(error) };
+    }
+  });
 
 export const GET = app.fetch;
 export const POST = app.fetch;
