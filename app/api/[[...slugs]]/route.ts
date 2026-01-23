@@ -1,6 +1,10 @@
 import { Elysia, t } from "elysia";
 import clickhouseClient from "@/lib/clients/clickhouse.client";
-import { getAusdMetrics, getTransferStatsDaily } from "@/lib/services/ausd.service";
+import {
+  getAusdMetrics,
+  getTransferStatsDaily,
+  getMintBurnStatsDaily,
+} from "@/lib/services/ausd.service";
 import { getWalletBalanceData } from "@/lib/services/wallet.service";
 import { SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
@@ -47,6 +51,35 @@ const app = new Elysia({ prefix: "/api" })
         return { status: "ok", data: stats };
       } catch (error) {
         console.error("Transfer stats error:", error);
+        return { status: "error", message: String(error) };
+      }
+    },
+    {
+      query: t.Object({
+        months: t.Optional(t.String()),
+        chainId: t.Optional(t.String()),
+      }),
+    }
+  )
+  .get(
+    "/ausd/mint-burn-stats",
+    async ({ query }) => {
+      try {
+        const months = query.months ? parseInt(query.months, 10) : 1;
+        const chainId = query.chainId ? parseInt(query.chainId, 10) : undefined;
+
+        const validChainId =
+          chainId && SUPPORTED_CHAIN_IDS.includes(chainId as ChainId)
+            ? (chainId as ChainId)
+            : undefined;
+
+        const stats = await getMintBurnStatsDaily({
+          months,
+          chainId: validChainId,
+        });
+        return { status: "ok", data: stats };
+      } catch (error) {
+        console.error("Mint/burn stats error:", error);
         return { status: "error", message: String(error) };
       }
     },
