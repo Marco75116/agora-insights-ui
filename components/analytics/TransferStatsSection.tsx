@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransferStats } from "@/hooks/useTransferStats";
 import { TransferStatsChart } from "@/components/analytics/TransferStatsChart";
+import { CollapsibleChartSection } from "@/components/analytics/CollapsibleChartSection";
 import {
   Select,
   SelectContent,
@@ -66,58 +67,67 @@ export function TransferStatsSection({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-4">
-        <Select value={months.toString()} onValueChange={(value) => updateParams("months", value)}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTH_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <CollapsibleChartSection
+      title="Transfer Statistics"
+      description="Daily transfer counts and volume"
+      defaultOpen
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Select
+            value={months.toString()}
+            onValueChange={(value) => updateParams("months", value)}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTH_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={chainId?.toString() ?? "all"}
-          onValueChange={(value) => updateParams("chainId", value)}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All chains" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All chains</SelectItem>
-            {SUPPORTED_CHAIN_IDS.map((id) => (
-              <SelectItem key={id} value={id.toString()}>
-                {CHAINS[id].name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <Select
+            value={chainId?.toString() ?? "all"}
+            onValueChange={(value) => updateParams("chainId", value)}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All chains" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All chains</SelectItem>
+              {SUPPORTED_CHAIN_IDS.map((id) => (
+                <SelectItem key={id} value={id.toString()}>
+                  {CHAINS[id].name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {isLoading ? (
-          <>
-            <ChartSkeleton />
-            <ChartSkeleton />
-          </>
-        ) : error ? (
-          <p className="text-destructive col-span-2">
-            Failed to load transfer stats: {error.message}
-          </p>
-        ) : transferStats?.stats && transferStats.stats.length > 0 ? (
-          <>
-            <TransferStatsChart data={transferStats.stats} metric="transfers" />
-            <TransferStatsChart data={transferStats.stats} metric="volume" />
-          </>
-        ) : (
-          <p className="text-muted-foreground col-span-2">No transfer data available</p>
-        )}
+        <div className="grid gap-4 md:grid-cols-2">
+          {isLoading ? (
+            <>
+              <ChartSkeleton />
+              <ChartSkeleton />
+            </>
+          ) : error ? (
+            <p className="text-destructive col-span-2">
+              Failed to load transfer stats: {error.message}
+            </p>
+          ) : transferStats?.stats && transferStats.stats.length > 0 ? (
+            <>
+              <TransferStatsChart data={transferStats.stats} metric="transfers" />
+              <TransferStatsChart data={transferStats.stats} metric="volume" />
+            </>
+          ) : (
+            <p className="text-muted-foreground col-span-2">No transfer data available</p>
+          )}
+        </div>
       </div>
-    </div>
+    </CollapsibleChartSection>
   );
 }
