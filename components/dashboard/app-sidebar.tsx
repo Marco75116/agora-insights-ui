@@ -1,12 +1,10 @@
 "use client";
 
-import { BarChart3, Home, LogOut, Zap } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { signOut } from "@/lib/auth-client";
+import { BarChart3, Home, Zap } from "lucide-react";
+import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -35,18 +33,7 @@ const navigationItems = [
 ];
 
 export function AppSidebar() {
-  const router = useRouter();
   const pathname = usePathname();
-
-  async function handleSignOut() {
-    await signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/login");
-        },
-      },
-    });
-  }
 
   return (
     <Sidebar collapsible="icon">
@@ -79,16 +66,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} tooltip="Sign out">
-              <LogOut />
-              <span>Sign out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }
