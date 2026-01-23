@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import clickhouseClient from "@/lib/clients/clickhouse.client";
+import { getAusdMetrics } from "@/lib/services/ausd.service";
 
 const app = new Elysia({ prefix: "/api" })
   .get("/hello", () => ({ message: "Hello from Elysia!" }))
@@ -13,6 +14,15 @@ const app = new Elysia({ prefix: "/api" })
       return { status: "ok", version: data[0].version };
     } catch (error) {
       console.error("ClickHouse error:", error);
+      return { status: "error", message: String(error) };
+    }
+  })
+  .get("/ausd/overview", async () => {
+    try {
+      const metrics = await getAusdMetrics();
+      return { status: "ok", data: metrics };
+    } catch (error) {
+      console.error("AUSD metrics error:", error);
       return { status: "error", message: String(error) };
     }
   })
