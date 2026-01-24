@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMintBurnStats } from "@/hooks/useMintBurnStats";
 import { MintBurnStatsChart } from "@/components/analytics/MintBurnStatsChart";
 import { CollapsibleChartSection } from "@/components/analytics/CollapsibleChartSection";
+import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import {
   Select,
   SelectContent,
@@ -11,8 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CHAINS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
 const MONTH_OPTIONS = [
@@ -21,19 +20,6 @@ const MONTH_OPTIONS = [
   { value: "6", label: "Last 6 months" },
   { value: "12", label: "Last 12 months" },
 ];
-
-function ChartSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-5 w-32" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-[300px] w-full" />
-      </CardContent>
-    </Card>
-  );
-}
 
 interface MintBurnStatsSectionProps {
   initialMonths?: number;
@@ -111,10 +97,10 @@ export function MintBurnStatsSection({
         <div className="grid gap-4 md:grid-cols-2">
           {isLoading ? (
             <>
-              <ChartSkeleton />
-              <ChartSkeleton />
-              <ChartSkeleton />
-              <ChartSkeleton />
+              <ChartSkeleton height={300} />
+              <ChartSkeleton height={300} />
+              <ChartSkeleton height={300} />
+              <ChartSkeleton height={300} />
             </>
           ) : error ? (
             <p className="text-destructive col-span-2">

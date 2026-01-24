@@ -5,14 +5,16 @@ import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { BalanceCard } from "@/components/wallet/BalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
 import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SUPPORTED_CHAIN_IDS } from "@/constants/chains";
+import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
+import { CHAINS, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
 
 export default function WalletPage() {
   const params = useParams();
   const address = (params.address as string)?.toLowerCase();
 
-  const { data, isLoading, error } = useWalletBalance(address);
+  const { data, isLoading, error, isPending } = useWalletBalance(address);
+
+  const showSkeleton = isLoading || isPending || !data;
 
   if (!address) {
     return (
@@ -38,9 +40,9 @@ export default function WalletPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {isLoading
+        {showSkeleton
           ? SUPPORTED_CHAIN_IDS.map((chainId) => <MetricCardSkeleton key={chainId} />)
-          : data?.balances.map((balance) => (
+          : data.balances.map((balance) => (
               <BalanceCard
                 key={balance.chainId}
                 chainId={balance.chainId}
@@ -50,16 +52,16 @@ export default function WalletPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {isLoading
+        {showSkeleton
           ? SUPPORTED_CHAIN_IDS.map((chainId) => (
-              <div key={chainId} className="rounded-lg border p-6">
-                <Skeleton className="mb-4 h-6 w-48" />
-                <Skeleton className="h-[200px] w-full" />
-              </div>
+              <ChartSkeleton key={chainId} title={`${CHAINS[chainId].name} Balance History`} />
             ))
-          : data?.history.map((history) => (
-              <BalanceHistoryChart key={history.chainId} data={history} />
-            ))}
+          : SUPPORTED_CHAIN_IDS.map((chainId) => {
+              const history = data.history.find((h) => h.chainId === chainId);
+              return (
+                <BalanceHistoryChart key={chainId} data={history ?? { chainId, snapshots: [] }} />
+              );
+            })}
       </div>
 
       {data?.lastUpdated && (
