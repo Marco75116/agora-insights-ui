@@ -79,8 +79,12 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  formatter={(value) => formatCompactNumber(Number(value))}
-                  labelFormatter={(label) => `Block ${formatCompactNumber(Number(label))}`}
+                  formatter={(value) => `${formatCompactNumber(Number(value))} AUSD`}
+                  labelFormatter={(_, payload) => {
+                    const blockNumber = payload?.[0]?.payload?.blockNumber;
+                    if (blockNumber === undefined) return "Block";
+                    return `Block ${blockNumber.toLocaleString()}`;
+                  }}
                 />
               }
             />
