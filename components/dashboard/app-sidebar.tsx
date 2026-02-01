@@ -35,10 +35,10 @@ export function AppSidebar() {
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
           <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-bold">
-            M
+            A
           </span>
           <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">
-            Magnifi
+            Agora Insights
           </span>
         </div>
       </SidebarHeader>
