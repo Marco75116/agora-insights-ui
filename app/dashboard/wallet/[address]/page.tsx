@@ -19,7 +19,7 @@ export default function WalletPage() {
     isInvalidAddress ? undefined : address
   );
 
-  const showSkeleton = isLoading || isPending || !data;
+  const showSkeleton = !isInvalidAddress && (isLoading || isPending || !data);
 
   if (!address) {
     return (
@@ -50,7 +50,9 @@ export default function WalletPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {showSkeleton
           ? SUPPORTED_CHAIN_IDS.map((chainId) => <MetricCardSkeleton key={chainId} />)
-          : data.balances.map((balance) => (
+          : (
+              data?.balances ?? SUPPORTED_CHAIN_IDS.map((chainId) => ({ chainId, balance: "0" }))
+            ).map((balance) => (
               <BalanceCard
                 key={balance.chainId}
                 chainId={balance.chainId}
@@ -65,7 +67,7 @@ export default function WalletPage() {
               <ChartSkeleton key={chainId} title={`${CHAINS[chainId].name} Balance History`} />
             ))
           : SUPPORTED_CHAIN_IDS.map((chainId) => {
-              const history = data.history.find((h) => h.chainId === chainId);
+              const history = data?.history.find((h) => h.chainId === chainId);
               return (
                 <BalanceHistoryChart key={chainId} data={history ?? { chainId, snapshots: [] }} />
               );
