@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-function isValidEthereumAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
+import { isValidEthereumAddress } from "@/lib/helpers/address";
 
 export function AddressSearchForm() {
   const router = useRouter();
