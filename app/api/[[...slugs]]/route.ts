@@ -5,6 +5,7 @@ import {
   getMintBurnStatsDaily,
 } from "@/lib/services/ausd.service";
 import { getWalletBalanceData } from "@/lib/services/wallet.service";
+import { isValidEthereumAddress } from "@/lib/helpers/address";
 import { SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
 const app = new Elysia({ prefix: "/api" })
@@ -76,6 +77,10 @@ const app = new Elysia({ prefix: "/api" })
     }
   )
   .get("/wallet/:address", async ({ params }) => {
+    if (!isValidEthereumAddress(params.address)) {
+      return { status: "error", message: "Invalid address format" };
+    }
+
     try {
       const data = await getWalletBalanceData(params.address);
       return { status: "ok", data };

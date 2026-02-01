@@ -6,13 +6,18 @@ import { BalanceCard } from "@/components/wallet/BalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
 import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
 import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
+import { Badge } from "@/components/ui/badge";
+import { isValidEthereumAddress } from "@/lib/helpers/address";
 import { CHAINS, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
 
 export default function WalletPage() {
   const params = useParams();
   const address = (params.address as string)?.toLowerCase();
+  const isInvalidAddress = address && !isValidEthereumAddress(address);
 
-  const { data, isLoading, error, isPending } = useWalletBalance(address);
+  const { data, isLoading, error, isPending } = useWalletBalance(
+    isInvalidAddress ? undefined : address
+  );
 
   const showSkeleton = isLoading || isPending || !data;
 
@@ -36,7 +41,10 @@ export default function WalletPage() {
     <div className="flex flex-1 flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Wallet Balance</h1>
-        <p className="text-muted-foreground font-mono text-sm">{address}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-muted-foreground font-mono text-sm">{address}</p>
+          {isInvalidAddress && <Badge variant="destructive">Invalid format</Badge>}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

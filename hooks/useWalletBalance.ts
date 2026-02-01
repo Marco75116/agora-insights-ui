@@ -22,10 +22,10 @@ async function fetchWalletBalance(walletAddress: string): Promise<WalletBalanceD
   return result.data;
 }
 
-export function useWalletBalance(walletAddress: string) {
+export function useWalletBalance(walletAddress: string | undefined) {
   return useQuery({
-    queryKey: ["wallet", "balance", walletAddress.toLowerCase()],
-    queryFn: () => fetchWalletBalance(walletAddress),
+    queryKey: ["wallet", "balance", walletAddress?.toLowerCase()],
+    queryFn: () => fetchWalletBalance(walletAddress!),
     staleTime: STALE_TIME,
     refetchInterval: REFETCH_INTERVAL,
     enabled: Boolean(walletAddress),
