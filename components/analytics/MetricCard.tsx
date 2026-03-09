@@ -18,7 +18,7 @@ export function MetricCard({ title, value, subtitle, icon, className }: MetricCa
         {icon}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold tabular-nums">{value}</div>
         {subtitle && <p className="text-muted-foreground text-xs">{subtitle}</p>}
       </CardContent>
     </Card>

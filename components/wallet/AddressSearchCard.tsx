@@ -8,7 +8,7 @@ export function AddressSearchCard() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
-            <Wallet className="text-primary h-5 w-5" />
+            <Wallet className="text-primary h-5 w-5" aria-hidden="true" />
           </div>
           <div>
             <CardTitle>Wallet Balance</CardTitle>

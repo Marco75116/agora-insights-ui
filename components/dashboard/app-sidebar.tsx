@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BarChart3, Home } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -55,10 +56,10 @@ export function AppSidebar() {
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
-                    <a href={item.url}>
-                      <item.icon />
+                    <Link href={item.url}>
+                      <item.icon aria-hidden="true" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

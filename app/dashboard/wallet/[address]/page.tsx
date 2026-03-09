@@ -40,9 +40,9 @@ export default function WalletPage() {
   return (
     <div className="flex flex-1 flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Wallet Balance</h1>
+        <h1 className="text-2xl font-semibold text-balance">Wallet Balance</h1>
         <div className="flex items-center gap-2">
-          <p className="text-muted-foreground font-mono text-sm">{address}</p>
+          <p className="text-muted-foreground font-mono text-sm break-all">{address}</p>
           {isInvalidAddress && <Badge variant="destructive">Invalid format</Badge>}
         </div>
       </div>
@@ -76,7 +76,10 @@ export default function WalletPage() {
 
       {data?.lastUpdated && (
         <p className="text-muted-foreground text-xs">
-          Last updated: {new Date(data.lastUpdated).toLocaleString()}
+          Last updated:{" "}
+          {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
+            new Date(data.lastUpdated)
+          )}
         </p>
       )}
     </div>

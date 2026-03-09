@@ -18,7 +18,9 @@ export function BalanceCard({ chainId, balance, className }: BalanceCardProps) {
         <CardTitle className="text-muted-foreground text-sm font-medium">{chain.name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{formatTokenAmount(balance, AUSD_DECIMALS)}</div>
+        <div className="text-2xl font-bold tabular-nums">
+          {formatTokenAmount(balance, AUSD_DECIMALS)}
+        </div>
         <p className="text-muted-foreground text-xs">AUSD Balance</p>
       </CardContent>
     </Card>

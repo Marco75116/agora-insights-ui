@@ -34,17 +34,24 @@ export function AddressSearchForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
+        <label htmlFor="wallet-address" className="sr-only">
+          Wallet address
+        </label>
         <Input
+          id="wallet-address"
           type="text"
-          placeholder="0x..."
+          name="address"
+          placeholder={"0x1234abcd\u2026"}
           value={address}
           onChange={(e) => setAddress(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
           aria-invalid={!!error}
         />
         {error && <p className="text-destructive text-sm">{error}</p>}
       </div>
       <Button type="submit">
-        <Search />
+        <Search aria-hidden="true" />
         View Balance
       </Button>
     </form>

@@ -55,7 +55,7 @@ export default function AusdAnalyticsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">AUSD Analytics</h1>
+        <h1 className="text-2xl font-semibold text-balance">AUSD Analytics</h1>
         <p className="text-muted-foreground text-sm">
           Overview of AUSD token metrics across supported chains
         </p>
@@ -73,13 +73,13 @@ export default function AusdAnalyticsPage() {
               title="Total Supply"
               value={formatTokenAmount(data?.totalSupplyAcrossChains ?? "0", AUSD_DECIMALS)}
               subtitle="Across all chains"
-              icon={<Coins className="text-muted-foreground h-4 w-4" />}
+              icon={<Coins className="text-muted-foreground h-4 w-4" aria-hidden="true" />}
             />
             <MetricCard
               title="Total Holders"
               value={formatNumber(data?.totalHoldersAcrossChains ?? 0)}
               subtitle="Unique addresses"
-              icon={<Users className="text-muted-foreground h-4 w-4" />}
+              icon={<Users className="text-muted-foreground h-4 w-4" aria-hidden="true" />}
             />
           </>
         )}
@@ -118,7 +118,10 @@ export default function AusdAnalyticsPage() {
 
       {data?.lastUpdated && (
         <p className="text-muted-foreground text-xs">
-          Last updated: {new Date(data.lastUpdated).toLocaleString()}
+          Last updated:{" "}
+          {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
+            new Date(data.lastUpdated)
+          )}
         </p>
       )}
     </div>
