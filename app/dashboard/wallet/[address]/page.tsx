@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { WalletBalanceTable } from "@/components/wallet/WalletBalanceTable";
+import { WalletBalanceCard } from "@/components/wallet/WalletBalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
 import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +46,9 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <WalletBalanceTable balances={data?.balances ?? []} isLoading={showSkeleton} />
+      <div className="max-w-[50%]">
+        <WalletBalanceCard balances={data?.balances ?? []} isLoading={showSkeleton} />
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {showSkeleton

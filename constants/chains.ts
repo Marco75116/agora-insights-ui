@@ -25,28 +25,28 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     name: "Ethereum",
     shortName: "ETH",
     tag: "eth",
-    color: "var(--chart-1)",
+    color: "#8C8C8C",
   },
   [CHAIN_IDS.MANTLE]: {
     id: CHAIN_IDS.MANTLE,
     name: "Mantle",
     shortName: "MNT",
     tag: "mantle",
-    color: "var(--chart-2)",
+    color: "#2FC89F",
   },
   [CHAIN_IDS.MONAD]: {
     id: CHAIN_IDS.MONAD,
     name: "Monad",
     shortName: "MON",
     tag: "monad",
-    color: "var(--chart-3)",
+    color: "#E45BF6",
   },
   [CHAIN_IDS.POLYGON]: {
     id: CHAIN_IDS.POLYGON,
     name: "Polygon",
     shortName: "POL",
     tag: "pol",
-    color: "var(--chart-4)",
+    color: "#8247E5",
   },
 };
 
