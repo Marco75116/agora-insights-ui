@@ -17,6 +17,7 @@ export interface ChainConfig {
   shortName: string;
   tag: string;
   color: string;
+  explorerUrl: string;
 }
 
 export const CHAINS: Record<ChainId, ChainConfig> = {
@@ -26,6 +27,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     shortName: "ETH",
     tag: "eth",
     color: "#8C8C8C",
+    explorerUrl: "https://etherscan.io",
   },
   [CHAIN_IDS.MANTLE]: {
     id: CHAIN_IDS.MANTLE,
@@ -33,6 +35,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     shortName: "MNT",
     tag: "mantle",
     color: "#2FC89F",
+    explorerUrl: "https://mantlescan.xyz",
   },
   [CHAIN_IDS.MONAD]: {
     id: CHAIN_IDS.MONAD,
@@ -40,6 +43,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     shortName: "MON",
     tag: "monad",
     color: "#E45BF6",
+    explorerUrl: "https://monadexplorer.com",
   },
   [CHAIN_IDS.POLYGON]: {
     id: CHAIN_IDS.POLYGON,
@@ -47,6 +51,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     shortName: "POL",
     tag: "pol",
     color: "#8247E5",
+    explorerUrl: "https://polygonscan.com",
   },
 };
 

@@ -4,6 +4,7 @@ import {
   getTransferStatsDaily,
   getMintBurnStatsDaily,
   getTotalSupplyDaily,
+  getTopHolders,
 } from "@/lib/services/ausd.service";
 import { getWalletBalanceData } from "@/lib/services/wallet.service";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
@@ -134,6 +135,37 @@ const app = new Elysia({ prefix: "/api" })
       query: t.Object({
         months: t.Optional(t.String()),
         chainId: t.String(),
+      }),
+    }
+  )
+  .get(
+    "/ausd/top-holders",
+    async ({ query }) => {
+      try {
+        const limit = query.limit ? parseInt(query.limit, 10) : 10;
+        if (Number.isNaN(limit) || limit < 1 || limit > 100) {
+          return { status: "error", message: "Invalid limit. Must be between 1 and 100" };
+        }
+
+        const chainId = query.chainId ? parseChainId(query.chainId) : undefined;
+        if (query.chainId && chainId === null) {
+          return {
+            status: "error",
+            message: `Invalid chainId. Allowed: ${SUPPORTED_CHAIN_IDS.join(", ")}`,
+          };
+        }
+
+        const data = await getTopHolders({ limit, chainId: chainId ?? undefined });
+        return { status: "ok", data };
+      } catch (error) {
+        console.error("Top holders error:", error);
+        return { status: "error", message: String(error) };
+      }
+    },
+    {
+      query: t.Object({
+        limit: t.Optional(t.String()),
+        chainId: t.Optional(t.String()),
       }),
     }
   )

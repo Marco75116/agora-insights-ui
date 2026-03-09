@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { ChainBreakdownSection } from "@/components/analytics/ChainBreakdownSection";
 import { TotalSupplySection } from "@/components/analytics/TotalSupplySection";
+import { TopHoldersSection } from "@/components/analytics/TopHoldersSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
@@ -19,10 +20,10 @@ function ChartSkeleton() {
 
 function ChainBreakdownFallback() {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <>
       <ChartSkeleton />
       <ChartSkeleton />
-    </div>
+    </>
   );
 }
 
@@ -40,9 +41,15 @@ export default function AusdAnalyticsPage() {
         </p>
       </div>
 
-      <Suspense fallback={<ChainBreakdownFallback />}>
-        <ChainBreakdownSection />
-      </Suspense>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[8fr_8fr_5fr]">
+        <Suspense fallback={<ChainBreakdownFallback />}>
+          <ChainBreakdownSection />
+        </Suspense>
+
+        <Suspense fallback={<ChartSkeleton />}>
+          <TopHoldersSection />
+        </Suspense>
+      </div>
 
       <Suspense fallback={<TotalSupplyFallback />}>
         <TotalSupplySection />
