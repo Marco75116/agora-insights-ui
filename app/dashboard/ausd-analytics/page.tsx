@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { ChainBreakdownSection } from "@/components/analytics/ChainBreakdownSection";
 import { TotalSupplySection } from "@/components/analytics/TotalSupplySection";
+import { TopHoldersSection } from "@/components/analytics/TopHoldersSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { CHAIN_IDS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 
 function ChartSkeleton() {
   return (
@@ -19,10 +21,10 @@ function ChartSkeleton() {
 
 function ChainBreakdownFallback() {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <>
       <ChartSkeleton />
       <ChartSkeleton />
-    </div>
+    </>
   );
 }
 
@@ -30,7 +32,18 @@ function TotalSupplyFallback() {
   return <ChartSkeleton />;
 }
 
-export default function AusdAnalyticsPage() {
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const holdersChainIdRaw =
+    typeof params.holdersChainId === "string" ? parseInt(params.holdersChainId, 10) : NaN;
+  const holdersChainId: ChainId = SUPPORTED_CHAIN_IDS.includes(holdersChainIdRaw as ChainId)
+    ? (holdersChainIdRaw as ChainId)
+    : CHAIN_IDS.ETHEREUM;
+
   return (
     <div className="flex flex-1 flex-col gap-6">
       <div>
@@ -40,13 +53,27 @@ export default function AusdAnalyticsPage() {
         </p>
       </div>
 
-      <Suspense fallback={<ChainBreakdownFallback />}>
-        <ChainBreakdownSection />
-      </Suspense>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[8fr_8fr_5fr]">
+        <Suspense fallback={<ChainBreakdownFallback />}>
+          <ChainBreakdownSection />
+        </Suspense>
+
+        <Suspense fallback={<ChartSkeleton />}>
+          <TopHoldersSection chainId={holdersChainId} />
+        </Suspense>
+      </div>
 
       <Suspense fallback={<TotalSupplyFallback />}>
         <TotalSupplySection />
       </Suspense>
+
+      <p className="text-muted-foreground text-xs">
+        Last updated:{" "}
+        {new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date())}
+      </p>
     </div>
   );
 }
