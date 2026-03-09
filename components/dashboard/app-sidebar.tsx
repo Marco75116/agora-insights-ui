@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, Home } from "lucide-react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -34,9 +35,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-bold">
-            A
-          </span>
+          <Image
+            src="/agora-logo.png"
+            alt="Agora Insights"
+            width={24}
+            height={24}
+            className="shrink-0"
+          />
           <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">
             Agora Insights
           </span>
