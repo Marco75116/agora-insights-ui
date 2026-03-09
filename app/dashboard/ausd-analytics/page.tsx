@@ -2,13 +2,9 @@
 
 import { Suspense } from "react";
 import { useAusdMetrics } from "@/hooks/useAusdMetrics";
-import { ChainStatsTable } from "@/components/analytics/ChainStatsTable";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
 import { TransferStatsSection } from "@/components/analytics/TransferStatsSection";
 import { MintBurnStatsSection } from "@/components/analytics/MintBurnStatsSection";
-import { AUSD_DECIMALS } from "@/constants/chains";
-import { formatTokenAmount, formatNumber } from "@/lib/helpers/formatters";
-import { Coins, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
@@ -61,52 +57,17 @@ export default function AusdAnalyticsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardContent className="space-y-4">
-            {isLoading ? (
-              <>
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-7 w-32" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-7 w-24" />
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-                    <Coins className="h-3.5 w-3.5" aria-hidden="true" />
-                    Total Supply
-                  </div>
-                  <div className="text-2xl font-bold tracking-tight tabular-nums">
-                    {formatTokenAmount(data?.totalSupplyAcrossChains ?? "0", AUSD_DECIMALS)}
-                  </div>
-                </div>
-                <div className="border-t pt-4">
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-                    <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                    Total Holders
-                  </div>
-                  <div className="text-2xl font-bold tracking-tight tabular-nums">
-                    {formatNumber(data?.totalHoldersAcrossChains ?? 0)}
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        <ChainStatsTable data={data?.chainBreakdown ?? []} isLoading={isLoading} />
+        <ChainBreakdownChart
+          data={data?.chainBreakdown ?? []}
+          metric="supply"
+          isLoading={isLoading}
+        />
+        <ChainBreakdownChart
+          data={data?.chainBreakdown ?? []}
+          metric="holders"
+          isLoading={isLoading}
+        />
       </div>
-
-      {!isLoading && data && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <ChainBreakdownChart data={data.chainBreakdown} metric="supply" />
-          <ChainBreakdownChart data={data.chainBreakdown} metric="holders" />
-        </div>
-      )}
 
       <Suspense fallback={<TransferStatsFallback />}>
         <TransferStatsSection />
