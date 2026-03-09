@@ -7,6 +7,8 @@ import type {
   TransferStatsResponse,
   DailyMintBurnStats,
   MintBurnStatsResponse,
+  DailyTotalSupply,
+  TotalSupplyDailyResponse,
 } from "@/types/Analytics";
 
 interface SupplyResult {
@@ -182,6 +184,72 @@ export async function getTransferStatsDaily(
     transferCount: parseInt(row.transfer_count, 10),
     volume: row.volume,
   }));
+
+  return {
+    stats,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+interface TotalSupplyDailyResult {
+  date: string;
+  total_supply: string;
+}
+
+export interface TotalSupplyDailyFilter {
+  months?: number;
+  chainId: ChainId;
+}
+
+export async function getTotalSupplyDaily(
+  filter: TotalSupplyDailyFilter
+): Promise<TotalSupplyDailyResponse> {
+  const { months = 1, chainId } = filter;
+  const days = months * 30;
+
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        toString(date) as date,
+        toString(sum(amount) OVER (PARTITION BY chain_id, token_address ORDER BY date)) as total_supply
+      FROM total_supply_daily FINAL
+      WHERE token_address = {tokenAddress:FixedString(42)}
+        AND chain_id = {chainId:UInt16}
+      ORDER BY date ASC
+    `,
+    query_params: {
+      tokenAddress: AUSD_ADDRESS_LOWER,
+      chainId,
+    },
+    format: "JSONEachRow",
+  });
+
+  const allData = (await result.json()) as TotalSupplyDailyResult[];
+
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - days);
+
+  const supplyByDate = new Map(allData.map((row) => [row.date, row.total_supply]));
+
+  let lastKnownSupply = "0";
+  for (const row of allData) {
+    if (row.date < startDate.toISOString().slice(0, 10)) {
+      lastKnownSupply = row.total_supply;
+    }
+  }
+
+  const stats: DailyTotalSupply[] = [];
+  const current = new Date(startDate);
+  while (current <= today) {
+    const dateStr = current.toISOString().slice(0, 10);
+    const supply = supplyByDate.get(dateStr);
+    if (supply !== undefined) {
+      lastKnownSupply = supply;
+    }
+    stats.push({ date: dateStr, totalSupply: lastKnownSupply });
+    current.setDate(current.getDate() + 1);
+  }
 
   return {
     stats,
