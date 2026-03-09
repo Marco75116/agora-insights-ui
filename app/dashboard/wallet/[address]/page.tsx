@@ -2,9 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { BalanceCard } from "@/components/wallet/BalanceCard";
+import { WalletBalanceTable } from "@/components/wallet/WalletBalanceTable";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
-import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
 import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
@@ -47,19 +46,7 @@ export default function WalletPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {showSkeleton
-          ? SUPPORTED_CHAIN_IDS.map((chainId) => <MetricCardSkeleton key={chainId} />)
-          : (
-              data?.balances ?? SUPPORTED_CHAIN_IDS.map((chainId) => ({ chainId, balance: "0" }))
-            ).map((balance) => (
-              <BalanceCard
-                key={balance.chainId}
-                chainId={balance.chainId}
-                balance={balance.balance}
-              />
-            ))}
-      </div>
+      <WalletBalanceTable balances={data?.balances ?? []} isLoading={showSkeleton} />
 
       <div className="grid gap-4 md:grid-cols-2">
         {showSkeleton
