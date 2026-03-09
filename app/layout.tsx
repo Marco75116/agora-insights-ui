@@ -25,8 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ colorScheme: "light" }}>
       <head>
+        <meta name="theme-color" content="#ffffff" />
         <Script
           src="https://umami-poocsgkg04o440ws0s04wgcg.marco33.fr/script.js"
           data-website-id="ac0b8054-4b43-4f31-91c2-962fd2c07824"

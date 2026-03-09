@@ -64,7 +64,7 @@ export function MintBurnStatsSection({
             value={months.toString()}
             onValueChange={(value) => updateParams("mintBurnMonths", value)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Select time period">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -80,7 +80,7 @@ export function MintBurnStatsSection({
             value={chainId?.toString() ?? "all"}
             onValueChange={(value) => updateParams("mintBurnChainId", value)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Select chain">
               <SelectValue placeholder="All chains" />
             </SelectTrigger>
             <SelectContent>

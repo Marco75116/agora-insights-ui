@@ -20,8 +20,11 @@ export function ChartSkeleton({ title, height = 200 }: ChartSkeletonProps) {
       <CardContent>
         <div className="bg-muted/50 flex items-center justify-center rounded-md" style={{ height }}>
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading chart...</span>
+            <Loader2
+              className="h-4 w-4 animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
+            <span>Loading chart\u2026</span>
           </div>
         </div>
       </CardContent>
