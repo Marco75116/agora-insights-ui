@@ -2,12 +2,11 @@
 
 import { Suspense } from "react";
 import { useAusdMetrics } from "@/hooks/useAusdMetrics";
-import { MetricCard } from "@/components/analytics/MetricCard";
-import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
+import { ChainStatsTable } from "@/components/analytics/ChainStatsTable";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
 import { TransferStatsSection } from "@/components/analytics/TransferStatsSection";
 import { MintBurnStatsSection } from "@/components/analytics/MintBurnStatsSection";
-import { CHAINS, AUSD_DECIMALS } from "@/constants/chains";
+import { AUSD_DECIMALS } from "@/constants/chains";
 import { formatTokenAmount, formatNumber } from "@/lib/helpers/formatters";
 import { Coins, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -61,44 +60,45 @@ export default function AusdAnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {isLoading ? (
-          <>
-            <MetricCardSkeleton />
-            <MetricCardSkeleton />
-          </>
-        ) : (
-          <>
-            <MetricCard
-              title="Total Supply"
-              value={formatTokenAmount(data?.totalSupplyAcrossChains ?? "0", AUSD_DECIMALS)}
-              subtitle="Across all chains"
-              icon={<Coins className="text-muted-foreground h-4 w-4" aria-hidden="true" />}
-            />
-            <MetricCard
-              title="Total Holders"
-              value={formatNumber(data?.totalHoldersAcrossChains ?? 0)}
-              subtitle="Unique addresses"
-              icon={<Users className="text-muted-foreground h-4 w-4" aria-hidden="true" />}
-            />
-          </>
-        )}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => <MetricCardSkeleton key={i} />)
-          : data?.chainBreakdown.map((chain) => {
-              const config = CHAINS[chain.chainId];
-              return (
-                <MetricCard
-                  key={chain.chainId}
-                  title={`${config.name} Supply`}
-                  value={formatTokenAmount(chain.totalSupply, AUSD_DECIMALS)}
-                  subtitle={`${formatNumber(chain.holdersCount)} holders`}
-                />
-              );
-            })}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-7 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-7 w-24" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+                    <Coins className="h-3.5 w-3.5" aria-hidden="true" />
+                    Total Supply
+                  </div>
+                  <div className="text-2xl font-bold tracking-tight tabular-nums">
+                    {formatTokenAmount(data?.totalSupplyAcrossChains ?? "0", AUSD_DECIMALS)}
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+                    <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                    Total Holders
+                  </div>
+                  <div className="text-2xl font-bold tracking-tight tabular-nums">
+                    {formatNumber(data?.totalHoldersAcrossChains ?? 0)}
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+        <ChainStatsTable data={data?.chainBreakdown ?? []} isLoading={isLoading} />
       </div>
 
       {!isLoading && data && (
