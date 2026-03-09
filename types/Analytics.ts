@@ -42,3 +42,13 @@ export interface MintBurnStatsResponse {
   stats: DailyMintBurnStats[];
   lastUpdated: string;
 }
+
+export interface DailyTotalSupply {
+  date: string;
+  totalSupply: string;
+}
+
+export interface TotalSupplyDailyResponse {
+  stats: DailyTotalSupply[];
+  lastUpdated: string;
+}
