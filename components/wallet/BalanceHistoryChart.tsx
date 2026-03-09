@@ -20,7 +20,7 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
   const chain = CHAINS[data.chainId];
 
   const chartData = data.snapshots.map((snapshot) => ({
-    blockNumber: snapshot.blockNumber,
+    date: snapshot.date,
     balance: parseTokenAmount(snapshot.totalBalance, AUSD_DECIMALS),
   }));
 
@@ -63,11 +63,14 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="blockNumber"
+              dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => formatCompactNumber(value)}
+              tickFormatter={(value) => {
+                const date = new Date(value);
+                return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              }}
             />
             <YAxis
               tickLine={false}
@@ -81,9 +84,13 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
                 <ChartTooltipContent
                   formatter={(value) => `${formatCompactNumber(Number(value))} AUSD`}
                   labelFormatter={(_, payload) => {
-                    const blockNumber = payload?.[0]?.payload?.blockNumber;
-                    if (blockNumber === undefined) return "Block";
-                    return `Block ${blockNumber.toLocaleString()}`;
+                    const date = payload?.[0]?.payload?.date;
+                    if (!date) return "";
+                    return new Date(date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    });
                   }}
                 />
               }

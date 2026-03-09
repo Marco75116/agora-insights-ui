@@ -15,6 +15,7 @@ interface BalanceResult {
 interface SnapshotResult {
   chain_id: number;
   block_number: string;
+  block_date: string;
   delta: string;
 }
 
@@ -44,6 +45,7 @@ export async function getWalletBalanceData(walletAddress: string): Promise<Walle
       runningTotal += BigInt(s.delta);
       return {
         blockNumber: Number(s.block_number),
+        date: s.block_date,
         delta: s.delta,
         totalBalance: runningTotal.toString(),
       };
@@ -90,11 +92,12 @@ async function getWalletBalanceHistory(walletAddress: string): Promise<SnapshotR
       SELECT
         chain_id,
         toString(block_number) as block_number,
+        toString(date) as block_date,
         toString(sum(delta)) as delta
       FROM balance_snapshots FINAL
       WHERE wallet_address = {walletAddress:FixedString(42)}
         AND token_address = {tokenAddress:FixedString(42)}
-      GROUP BY chain_id, block_number
+      GROUP BY chain_id, block_number, date
       ORDER BY chain_id, block_number
     `,
     query_params: {
