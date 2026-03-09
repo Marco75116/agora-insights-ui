@@ -7,6 +7,7 @@ export interface ChainBalance {
 
 export interface BalanceSnapshot {
   blockNumber: number;
+  date: string;
   delta: string;
   totalBalance: string;
 }
