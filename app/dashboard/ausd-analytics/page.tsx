@@ -12,6 +12,7 @@ import { formatTokenAmount, formatNumber } from "@/lib/helpers/formatters";
 import { Coins, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { LastBlockInfo } from "@/components/analytics/LastBlockInfo";
 
 function ChartSkeleton() {
   return (
@@ -117,9 +118,7 @@ export default function AusdAnalyticsPage() {
       </Suspense>
 
       {data?.lastUpdated && (
-        <p className="text-muted-foreground text-xs">
-          Last updated: {new Date(data.lastUpdated).toLocaleString()}
-        </p>
+        <LastBlockInfo lastUpdated={data.lastUpdated} lastBlockByChain={data.lastBlockByChain} />
       )}
     </div>
   );

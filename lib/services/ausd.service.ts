@@ -3,6 +3,7 @@ import { AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constan
 import type {
   ChainMetrics,
   AusdOverviewMetrics,
+  LastBlockByChain,
   DailyTransferStats,
   TransferStatsResponse,
   DailyMintBurnStats,
@@ -20,9 +21,10 @@ interface HoldersResult {
 }
 
 export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
-  const [supplyData, holdersData] = await Promise.all([
+  const [supplyData, holdersData, lastBlockData] = await Promise.all([
     getTotalSupplyByChain(),
     getHoldersCountByChain(),
+    getLastBlockByChain(),
   ]);
 
   const supplyMap = new Map(supplyData.map((s) => [s.chain_id, s.total_supply]));
@@ -47,6 +49,7 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
     totalSupplyAcrossChains,
     totalHoldersAcrossChains,
     chainBreakdown,
+    lastBlockByChain: lastBlockData,
     lastUpdated: new Date().toISOString(),
   };
 }
@@ -130,6 +133,31 @@ export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
     totalSupply: supply[0]?.total_supply ?? "0",
     holdersCount: parseInt(holders[0]?.holders_count ?? "0", 10),
   };
+}
+
+interface SyncResult {
+  id: string;
+  current_block: string;
+}
+
+export async function getLastBlockByChain(): Promise<LastBlockByChain[]> {
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        id,
+        current as current_block
+      FROM sync FINAL
+    `,
+    format: "JSONEachRow",
+  });
+
+  const data = (await result.json()) as SyncResult[];
+  const blockMap = new Map(data.map((d) => [d.id, Number(d.current_block)]));
+
+  return SUPPORTED_CHAIN_IDS.map((chainId) => ({
+    chainId,
+    blockNumber: blockMap.get(String(chainId)) ?? 0,
+  }));
 }
 
 interface TransferStatsResult {
