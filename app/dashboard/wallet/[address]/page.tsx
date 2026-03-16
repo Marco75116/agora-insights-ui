@@ -8,6 +8,7 @@ import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
 import { CHAINS, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
+import { LastBlockInfo } from "@/components/analytics/LastBlockInfo";
 
 export default function WalletPage() {
   const params = useParams();
@@ -64,12 +65,7 @@ export default function WalletPage() {
       </div>
 
       {data?.lastUpdated && (
-        <p className="text-muted-foreground text-xs">
-          Last updated:{" "}
-          {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-            new Date(data.lastUpdated)
-          )}
-        </p>
+        <LastBlockInfo lastUpdated={data.lastUpdated} lastBlockByChain={data.lastBlockByChain} />
       )}
     </div>
   );

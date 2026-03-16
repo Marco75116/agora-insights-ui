@@ -1,5 +1,6 @@
 import clickhouseClient from "@/lib/clients/clickhouse.client";
 import { AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
+import { getLastBlockByChain } from "@/lib/services/ausd.service";
 import type {
   ChainBalance,
   ChainBalanceHistory,
@@ -22,9 +23,10 @@ interface SnapshotResult {
 export async function getWalletBalanceData(walletAddress: string): Promise<WalletBalanceData> {
   const normalizedAddress = walletAddress.toLowerCase();
 
-  const [balancesData, historyData] = await Promise.all([
+  const [balancesData, historyData, lastBlockData] = await Promise.all([
     getWalletBalances(normalizedAddress),
     getWalletBalanceHistory(normalizedAddress),
+    getLastBlockByChain(),
   ]);
 
   const balances: ChainBalance[] = SUPPORTED_CHAIN_IDS.map((chainId) => {
@@ -61,6 +63,7 @@ export async function getWalletBalanceData(walletAddress: string): Promise<Walle
     walletAddress: normalizedAddress,
     balances,
     history,
+    lastBlockByChain: lastBlockData,
     lastUpdated: new Date().toISOString(),
   };
 }

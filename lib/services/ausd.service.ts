@@ -1,8 +1,9 @@
 import clickhouseClient from "@/lib/clients/clickhouse.client";
-import { AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
+import { AUSD_ADDRESS_LOWER, CHAINS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 import type {
   ChainMetrics,
   AusdOverviewMetrics,
+  LastBlockByChain,
   DailyTransferStats,
   TransferStatsResponse,
   DailyMintBurnStats,
@@ -24,9 +25,10 @@ interface HoldersResult {
 }
 
 export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
-  const [supplyData, holdersData] = await Promise.all([
+  const [supplyData, holdersData, lastBlockData] = await Promise.all([
     getTotalSupplyByChain(),
     getHoldersCountByChain(),
+    getLastBlockByChain(),
   ]);
 
   const supplyMap = new Map(supplyData.map((s) => [s.chain_id, s.total_supply]));
@@ -51,6 +53,7 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
     totalSupplyAcrossChains,
     totalHoldersAcrossChains,
     chainBreakdown,
+    lastBlockByChain: lastBlockData,
     lastUpdated: new Date().toISOString(),
   };
 }
@@ -134,6 +137,41 @@ export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
     totalSupply: supply[0]?.total_supply ?? "0",
     holdersCount: parseInt(holders[0]?.holders_count ?? "0", 10),
   };
+}
+
+interface SyncResult {
+  id: string;
+  current: string;
+}
+
+interface SyncCursor {
+  number: number;
+}
+
+export async function getLastBlockByChain(): Promise<LastBlockByChain[]> {
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT id, current
+      FROM sync FINAL
+    `,
+    format: "JSONEachRow",
+  });
+
+  const data = (await result.json()) as SyncResult[];
+  const blockMap = new Map<string, number>();
+
+  for (const row of data) {
+    const cursor = JSON.parse(row.current) as SyncCursor;
+    const existing = blockMap.get(row.id);
+    if (!existing || cursor.number > existing) {
+      blockMap.set(row.id, cursor.number);
+    }
+  }
+
+  return SUPPORTED_CHAIN_IDS.map((chainId) => ({
+    chainId,
+    blockNumber: blockMap.get(CHAINS[chainId].tag) ?? 0,
+  }));
 }
 
 interface TransferStatsResult {

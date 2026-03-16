@@ -6,10 +6,16 @@ export interface ChainMetrics {
   holdersCount: number;
 }
 
+export interface LastBlockByChain {
+  chainId: ChainId;
+  blockNumber: number;
+}
+
 export interface AusdOverviewMetrics {
   totalSupplyAcrossChains: string;
   totalHoldersAcrossChains: number;
   chainBreakdown: ChainMetrics[];
+  lastBlockByChain: LastBlockByChain[];
   lastUpdated: string;
 }
 
