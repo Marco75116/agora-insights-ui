@@ -2,9 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { BalanceCard } from "@/components/wallet/BalanceCard";
+import { WalletBalanceCard } from "@/components/wallet/WalletBalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
-import { MetricCardSkeleton } from "@/components/analytics/MetricCardSkeleton";
 import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
@@ -41,25 +40,15 @@ export default function WalletPage() {
   return (
     <div className="flex flex-1 flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Wallet Balance</h1>
+        <h1 className="text-2xl font-semibold text-balance">Wallet Balance</h1>
         <div className="flex items-center gap-2">
-          <p className="text-muted-foreground font-mono text-sm">{address}</p>
+          <p className="text-muted-foreground font-mono text-sm break-all">{address}</p>
           {isInvalidAddress && <Badge variant="destructive">Invalid format</Badge>}
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {showSkeleton
-          ? SUPPORTED_CHAIN_IDS.map((chainId) => <MetricCardSkeleton key={chainId} />)
-          : (
-              data?.balances ?? SUPPORTED_CHAIN_IDS.map((chainId) => ({ chainId, balance: "0" }))
-            ).map((balance) => (
-              <BalanceCard
-                key={balance.chainId}
-                chainId={balance.chainId}
-                balance={balance.balance}
-              />
-            ))}
+      <div className="max-w-[50%]">
+        <WalletBalanceCard balances={data?.balances ?? []} isLoading={showSkeleton} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

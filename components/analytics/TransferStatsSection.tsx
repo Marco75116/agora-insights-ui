@@ -64,7 +64,7 @@ export function TransferStatsSection({
             value={months.toString()}
             onValueChange={(value) => updateParams("months", value)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Select time period">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -80,7 +80,7 @@ export function TransferStatsSection({
             value={chainId?.toString() ?? "all"}
             onValueChange={(value) => updateParams("chainId", value)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Select chain">
               <SelectValue placeholder="All chains" />
             </SelectTrigger>
             <SelectContent>

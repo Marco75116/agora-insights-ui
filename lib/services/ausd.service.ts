@@ -8,6 +8,10 @@ import type {
   TransferStatsResponse,
   DailyMintBurnStats,
   MintBurnStatsResponse,
+  DailyTotalSupply,
+  TotalSupplyDailyResponse,
+  TopHolder,
+  TopHoldersResponse,
 } from "@/types/Analytics";
 
 interface SupplyResult {
@@ -213,6 +217,145 @@ export async function getTransferStatsDaily(
 
   return {
     stats,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+interface TotalSupplyDailyResult {
+  date: string;
+  total_supply: string;
+}
+
+export interface TotalSupplyDailyFilter {
+  months?: number;
+  chainId: ChainId;
+}
+
+export async function getTotalSupplyDaily(
+  filter: TotalSupplyDailyFilter
+): Promise<TotalSupplyDailyResponse> {
+  const { months = 1, chainId } = filter;
+  const days = months * 30;
+
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        toString(date) as date,
+        toString(sum(amount) OVER (PARTITION BY chain_id, token_address ORDER BY date)) as total_supply
+      FROM total_supply_daily FINAL
+      WHERE token_address = {tokenAddress:FixedString(42)}
+        AND chain_id = {chainId:UInt16}
+      ORDER BY date ASC
+    `,
+    query_params: {
+      tokenAddress: AUSD_ADDRESS_LOWER,
+      chainId,
+    },
+    format: "JSONEachRow",
+  });
+
+  const allData = (await result.json()) as TotalSupplyDailyResult[];
+
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - days);
+
+  const supplyByDate = new Map(allData.map((row) => [row.date, row.total_supply]));
+
+  let lastKnownSupply = "0";
+  for (const row of allData) {
+    if (row.date < startDate.toISOString().slice(0, 10)) {
+      lastKnownSupply = row.total_supply;
+    }
+  }
+
+  const stats: DailyTotalSupply[] = [];
+  const current = new Date(startDate);
+  while (current <= today) {
+    const dateStr = current.toISOString().slice(0, 10);
+    const supply = supplyByDate.get(dateStr);
+    if (supply !== undefined) {
+      lastKnownSupply = supply;
+    }
+    stats.push({ date: dateStr, totalSupply: lastKnownSupply });
+    current.setDate(current.getDate() + 1);
+  }
+
+  return {
+    stats,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+interface TopHolderResult {
+  wallet_address: string;
+  chain_id: number;
+  balance: string;
+}
+
+export interface TopHoldersFilter {
+  limit?: number;
+  chainId?: ChainId;
+}
+
+export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopHoldersResponse> {
+  const { limit = 10, chainId } = filter;
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+
+  const result = await clickhouseClient.query({
+    query: `
+      SELECT
+        wallet_address,
+        chain_id,
+        toString(amount) as balance
+      FROM balances FINAL
+      WHERE token_address = {tokenAddress:FixedString(42)}
+        AND amount > 0
+        ${chainCondition}
+        AND wallet_address IN (
+          SELECT wallet_address
+          FROM balances FINAL
+          WHERE token_address = {tokenAddress:FixedString(42)}
+            AND amount > 0
+            ${chainCondition}
+          GROUP BY wallet_address
+          ORDER BY sum(amount) DESC
+          LIMIT {limit:UInt32}
+        )
+      ORDER BY wallet_address, chain_id
+    `,
+    query_params: {
+      tokenAddress: AUSD_ADDRESS_LOWER,
+      limit,
+      ...(chainId && { chainId }),
+    },
+    format: "JSONEachRow",
+  });
+
+  const rows = (await result.json()) as TopHolderResult[];
+
+  const holdersMap = new Map<string, TopHolder>();
+  for (const row of rows) {
+    const existing = holdersMap.get(row.wallet_address);
+    const chainBalance = { chainId: row.chain_id as ChainId, balance: row.balance };
+    if (existing) {
+      existing.chainBalances.push(chainBalance);
+      existing.totalBalance = (BigInt(existing.totalBalance) + BigInt(row.balance)).toString();
+    } else {
+      holdersMap.set(row.wallet_address, {
+        walletAddress: row.wallet_address,
+        totalBalance: row.balance,
+        chainBalances: [chainBalance],
+      });
+    }
+  }
+
+  const holders = Array.from(holdersMap.values()).sort((a, b) =>
+    BigInt(b.totalBalance) > BigInt(a.totalBalance) ? 1 : -1
+  );
+
+  return {
+    holders,
     lastUpdated: new Date().toISOString(),
   };
 }

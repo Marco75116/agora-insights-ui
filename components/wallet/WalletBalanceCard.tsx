@@ -8,19 +8,17 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { CHAINS, SUPPORTED_CHAIN_IDS, AUSD_DECIMALS } from "@/constants/chains";
-import type { ChainMetrics } from "@/types/Analytics";
-import {
-  formatCompactNumber,
-  formatNumber,
-  formatTokenAmount,
-  parseTokenAmount,
-} from "@/lib/helpers/formatters";
+import { CHAINS, AUSD_DECIMALS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
+import { formatCompactNumber, parseTokenAmount, formatTokenAmount } from "@/lib/helpers/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ChainBreakdownChartProps {
-  data: ChainMetrics[];
-  metric: "supply" | "holders";
+interface BalanceData {
+  chainId: ChainId;
+  balance: string;
+}
+
+interface WalletBalanceCardProps {
+  balances: BalanceData[];
   isLoading: boolean;
 }
 
@@ -46,24 +44,22 @@ function RowSkeleton() {
   );
 }
 
-export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownChartProps) {
-  const isSupply = metric === "supply";
-  const title = isSupply ? "Supply by Chain" : "Holders by Chain";
-  const unit = isSupply ? "AUSD" : "holders";
+export function WalletBalanceCard({ balances, isLoading }: WalletBalanceCardProps) {
+  const resolvedBalances =
+    balances.length > 0
+      ? balances
+      : SUPPORTED_CHAIN_IDS.map((chainId) => ({ chainId, balance: "0" }));
 
   const chartData = SUPPORTED_CHAIN_IDS.map((chainId) => {
-    const chainMetrics = data.find((d) => d.chainId === chainId);
+    const found = resolvedBalances.find((b) => b.chainId === chainId);
     const config = CHAINS[chainId];
-    const value = isSupply
-      ? parseTokenAmount(chainMetrics?.totalSupply ?? "0", AUSD_DECIMALS)
-      : (chainMetrics?.holdersCount ?? 0);
     return {
       chainId,
       chain: config.tag,
       name: config.name,
       shortName: config.shortName,
-      value,
-      rawSupply: chainMetrics?.totalSupply ?? "0",
+      value: found ? parseTokenAmount(found.balance, AUSD_DECIMALS) : 0,
+      rawBalance: found?.balance ?? "0",
       fill: config.color,
     };
   });
@@ -74,7 +70,7 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
     <Card>
       <CardHeader className="pb-0">
         <CardTitle className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-          {title}
+          AUSD Balances
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
@@ -93,12 +89,13 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
                       <ChartTooltipContent
                         nameKey="chain"
                         formatter={(value, _name, item) => {
+                          const rawBalance = item?.payload?.rawBalance;
                           const pct =
                             totalValue > 0 ? ((Number(value) / totalValue) * 100).toFixed(1) : "0";
-                          const formatted = isSupply
-                            ? formatTokenAmount(item?.payload?.rawSupply ?? "0", AUSD_DECIMALS)
-                            : formatNumber(Number(value));
-                          return `${formatted} ${unit} (${pct}%)`;
+                          const formatted = rawBalance
+                            ? formatTokenAmount(rawBalance, AUSD_DECIMALS)
+                            : formatCompactNumber(Number(value));
+                          return `${formatted} AUSD (${pct}%)`;
                         }}
                         hideLabel
                       />
@@ -127,17 +124,14 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
                                 y={viewBox.cy}
                                 className="fill-foreground text-2xl font-bold"
                               >
-                                {new Intl.NumberFormat("en-US", {
-                                  notation: "compact",
-                                  maximumFractionDigits: 1,
-                                }).format(totalValue)}
+                                {formatCompactNumber(totalValue)}
                               </tspan>
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy ?? 0) + 20}
                                 className="fill-muted-foreground text-xs"
                               >
-                                {unit}
+                                AUSD
                               </tspan>
                             </text>
                           );
@@ -153,7 +147,7 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
             <div className="text-muted-foreground flex items-center justify-between border-b pb-2 text-xs">
               <span>Chain</span>
               <div className="flex items-center gap-4">
-                <span>{isSupply ? "Supply" : "Holders"}</span>
+                <span>Balance</span>
                 <span className="w-14 text-right">Share</span>
               </div>
             </div>
@@ -164,9 +158,6 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
                     const isZero = item.value === 0;
                     const pct =
                       totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : "0.0";
-                    const displayValue = isSupply
-                      ? formatTokenAmount(item.rawSupply, AUSD_DECIMALS)
-                      : formatNumber(item.value);
                     return (
                       <div key={item.chainId} className="flex items-center justify-between py-2.5">
                         <div className="flex items-center gap-2">
@@ -182,7 +173,7 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
                           <span
                             className={`font-mono text-sm tabular-nums ${isZero ? "text-muted-foreground" : ""}`}
                           >
-                            {displayValue}
+                            {formatTokenAmount(item.rawBalance, AUSD_DECIMALS)}
                           </span>
                           <span
                             className={`w-14 text-right font-mono text-sm tabular-nums ${isZero ? "text-muted-foreground" : ""}`}

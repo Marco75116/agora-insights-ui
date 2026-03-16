@@ -48,3 +48,24 @@ export interface MintBurnStatsResponse {
   stats: DailyMintBurnStats[];
   lastUpdated: string;
 }
+
+export interface DailyTotalSupply {
+  date: string;
+  totalSupply: string;
+}
+
+export interface TotalSupplyDailyResponse {
+  stats: DailyTotalSupply[];
+  lastUpdated: string;
+}
+
+export interface TopHolder {
+  walletAddress: string;
+  totalBalance: string;
+  chainBalances: { chainId: ChainId; balance: string }[];
+}
+
+export interface TopHoldersResponse {
+  holders: TopHolder[];
+  lastUpdated: string;
+}

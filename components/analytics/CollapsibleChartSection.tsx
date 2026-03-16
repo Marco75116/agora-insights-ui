@@ -57,7 +57,7 @@ export function CollapsibleChartSection({
         <button
           type="button"
           className={cn(
-            "border-border bg-card hover:bg-muted/50 flex w-full items-center justify-between rounded-lg border px-4 py-4 transition-all duration-200",
+            "border-border bg-card hover:bg-muted/50 flex w-full items-center justify-between rounded-lg border px-4 py-4 transition-colors duration-200",
             isOpen && "bg-muted/30"
           )}
         >
@@ -67,13 +67,14 @@ export function CollapsibleChartSection({
           </div>
           <div
             className={cn(
-              "bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
+              "bg-primary/10 flex size-8 items-center justify-center rounded-full transition-colors duration-300",
               isOpen && "bg-primary/20"
             )}
           >
             <ChevronRight
+              aria-hidden="true"
               className={cn(
-                "text-primary h-5 w-5 transition-transform duration-300 ease-out",
+                "text-primary size-5 transition-transform duration-300 ease-out motion-reduce:transition-none",
                 isOpen && "rotate-90"
               )}
             />
@@ -82,7 +83,7 @@ export function CollapsibleChartSection({
       </CollapsibleTrigger>
       <CollapsibleContent
         className={cn(
-          "overflow-hidden transition-all duration-300 ease-out",
+          "overflow-hidden transition-[height,opacity] duration-300 ease-out",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2"
         )}
