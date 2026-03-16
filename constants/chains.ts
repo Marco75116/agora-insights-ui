@@ -4,9 +4,10 @@ export const AUSD_DECIMALS = 6;
 
 export const CHAIN_IDS = {
   ETHEREUM: 1,
-  MANTLE: 5000,
   MONAD: 143,
   POLYGON: 137,
+  IMMUTABLE_ZKEVM: 13371,
+  AVALANCHE: 43114,
 } as const;
 
 export type ChainId = (typeof CHAIN_IDS)[keyof typeof CHAIN_IDS];
@@ -29,14 +30,6 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     color: "#8C8C8C",
     explorerUrl: "https://etherscan.io",
   },
-  [CHAIN_IDS.MANTLE]: {
-    id: CHAIN_IDS.MANTLE,
-    name: "Mantle",
-    shortName: "MNT",
-    tag: "mantle",
-    color: "#2FC89F",
-    explorerUrl: "https://mantlescan.xyz",
-  },
   [CHAIN_IDS.MONAD]: {
     id: CHAIN_IDS.MONAD,
     name: "Monad",
@@ -53,11 +46,28 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     color: "#8247E5",
     explorerUrl: "https://polygonscan.com",
   },
+  [CHAIN_IDS.IMMUTABLE_ZKEVM]: {
+    id: CHAIN_IDS.IMMUTABLE_ZKEVM,
+    name: "Immutable zkEVM",
+    shortName: "IMX",
+    tag: "immutable-zkevm",
+    color: "#00B2A9",
+    explorerUrl: "https://explorer.immutable.com",
+  },
+  [CHAIN_IDS.AVALANCHE]: {
+    id: CHAIN_IDS.AVALANCHE,
+    name: "Avalanche",
+    shortName: "AVAX",
+    tag: "avalanche",
+    color: "#E84142",
+    explorerUrl: "https://snowtrace.io",
+  },
 };
 
 export const SUPPORTED_CHAIN_IDS: ChainId[] = [
   CHAIN_IDS.ETHEREUM,
-  CHAIN_IDS.MANTLE,
   CHAIN_IDS.MONAD,
   CHAIN_IDS.POLYGON,
+  CHAIN_IDS.IMMUTABLE_ZKEVM,
+  CHAIN_IDS.AVALANCHE,
 ];
