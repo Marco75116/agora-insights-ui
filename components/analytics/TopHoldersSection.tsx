@@ -36,7 +36,7 @@ interface TopHoldersSectionProps {
 }
 
 export async function TopHoldersSection({ chainId }: TopHoldersSectionProps) {
-  const data = await getTopHolders({ limit: 5, chainId });
+  const data = await getTopHolders({ limit: 7, chainId });
 
   return (
     <Card>

@@ -8,7 +8,7 @@ const STALE_TIME = 30 * 1000;
 const REFETCH_INTERVAL = 60 * 1000;
 
 async function fetchTopHolders(chainId?: ChainId): Promise<TopHoldersResponse> {
-  const params = new URLSearchParams({ limit: "5" });
+  const params = new URLSearchParams({ limit: "7" });
   if (chainId) {
     params.set("chainId", String(chainId));
   }
