@@ -8,6 +8,7 @@ export const CHAIN_IDS = {
   POLYGON: 137,
   IMMUTABLE_ZKEVM: 13371,
   AVALANCHE: 43114,
+  KATANA: 747474,
 } as const;
 
 export type ChainId = (typeof CHAIN_IDS)[keyof typeof CHAIN_IDS];
@@ -62,6 +63,14 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     color: "#E84142",
     explorerUrl: "https://snowtrace.io",
   },
+  [CHAIN_IDS.KATANA]: {
+    id: CHAIN_IDS.KATANA,
+    name: "Katana",
+    shortName: "KAT",
+    tag: "katana",
+    color: "#FF6B35",
+    explorerUrl: "https://katanascan.com",
+  },
 };
 
 export const SUPPORTED_CHAIN_IDS: ChainId[] = [
@@ -70,4 +79,5 @@ export const SUPPORTED_CHAIN_IDS: ChainId[] = [
   CHAIN_IDS.POLYGON,
   CHAIN_IDS.IMMUTABLE_ZKEVM,
   CHAIN_IDS.AVALANCHE,
+  CHAIN_IDS.KATANA,
 ];
