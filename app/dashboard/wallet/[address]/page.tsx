@@ -59,7 +59,11 @@ export default function WalletPage() {
           : SUPPORTED_CHAIN_IDS.map((chainId) => {
               const history = data?.history.find((h) => h.chainId === chainId);
               return (
-                <BalanceHistoryChart key={chainId} data={history ?? { chainId, snapshots: [] }} />
+                <BalanceHistoryChart
+                  key={chainId}
+                  data={history ?? { chainId, snapshots: [] }}
+                  walletAddress={address}
+                />
               );
             })}
       </div>

@@ -2,21 +2,24 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { ExternalLink } from "lucide-react";
 import { CHAINS, AUSD_DECIMALS } from "@/constants/chains";
 import { formatCompactNumber, parseTokenAmount } from "@/lib/helpers/formatters";
 import type { ChainBalanceHistory } from "@/types/WalletBalance";
 
 interface BalanceHistoryChartProps {
   data: ChainBalanceHistory;
+  walletAddress: string;
 }
 
-export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
+export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChartProps) {
   const chain = CHAINS[data.chainId];
 
   const chartData = data.snapshots.map((snapshot) => ({
@@ -35,7 +38,22 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{chain.name} Balance History</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            {chain.name} Balance History
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a
+                  href={`${chain.explorerUrl}/address/${walletAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`View on ${chain.name} scanner`}
+                >
+                  <ExternalLink className="text-muted-foreground hover:text-foreground h-4 w-4 transition-colors" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent>View on {chain.name} scanner</TooltipContent>
+            </Tooltip>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-muted-foreground flex h-[200px] items-center justify-center text-sm">
@@ -49,7 +67,22 @@ export function BalanceHistoryChart({ data }: BalanceHistoryChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{chain.name} Balance History</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-base">
+          {chain.name} Balance History
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <a
+                href={`${chain.explorerUrl}/address/${walletAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View on ${chain.name} scanner`}
+              >
+                <ExternalLink className="text-muted-foreground hover:text-foreground h-4 w-4 transition-colors" />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>View on {chain.name} scanner</TooltipContent>
+          </Tooltip>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[200px] w-full">
