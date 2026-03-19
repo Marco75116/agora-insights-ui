@@ -69,7 +69,7 @@ export const CHAINS: Record<ChainId, ChainConfig> = {
     shortName: "KAT",
     tag: "katana",
     color: "#FF6B35",
-    explorerUrl: "https://explorer.katana.network",
+    explorerUrl: "https://katanascan.com",
   },
 };
 
