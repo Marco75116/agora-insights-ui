@@ -103,7 +103,7 @@ export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
       query: `
         SELECT toString(sum(amount)) as total_supply
         FROM balances FINAL
-        WHERE chain_id = {chainId:UInt16}
+        WHERE chain_id = {chainId:UInt32}
           AND token_address = {tokenAddress:FixedString(42)}
           AND amount > 0
       `,
@@ -117,7 +117,7 @@ export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
       query: `
         SELECT toString(count(DISTINCT wallet_address)) as holders_count
         FROM balances FINAL
-        WHERE chain_id = {chainId:UInt16}
+        WHERE chain_id = {chainId:UInt32}
           AND token_address = {tokenAddress:FixedString(42)}
           AND amount > 0
       `,
@@ -191,7 +191,7 @@ export async function getTransferStatsDaily(
   const { months = 1, chainId } = filter;
   const days = months * 30;
 
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
 
   const result = await clickhouseClient.query({
     query: `
@@ -254,7 +254,7 @@ export async function getTotalSupplyDaily(
         toString(sum(amount) OVER (PARTITION BY chain_id, token_address ORDER BY date)) as total_supply
       FROM total_supply_daily FINAL
       WHERE token_address = {tokenAddress:FixedString(42)}
-        AND chain_id = {chainId:UInt16}
+        AND chain_id = {chainId:UInt32}
       ORDER BY date ASC
     `,
     query_params: {
@@ -310,7 +310,7 @@ export interface TopHoldersFilter {
 
 export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopHoldersResponse> {
   const { limit = 10, chainId } = filter;
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
 
   const result = await clickhouseClient.query({
     query: `
@@ -389,7 +389,7 @@ export async function getMintBurnStatsDaily(
   const { months = 1, chainId } = filter;
   const days = months * 30;
 
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt16}" : "";
+  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
 
   const result = await clickhouseClient.query({
     query: `
