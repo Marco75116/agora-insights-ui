@@ -42,12 +42,14 @@ export default function WalletPage() {
       <div>
         <h1 className="text-2xl font-semibold text-balance">Wallet Balance</h1>
         <div className="flex items-center gap-2">
-          <p className="text-muted-foreground font-mono text-sm break-all">{address}</p>
+          <p className="text-muted-foreground min-w-0 truncate font-mono text-xs sm:text-sm">
+            {address}
+          </p>
           {isInvalidAddress && <Badge variant="destructive">Invalid format</Badge>}
         </div>
       </div>
 
-      <div className="max-w-[50%]">
+      <div className="md:max-w-[50%]">
         <WalletBalanceCard balances={data?.balances ?? []} isLoading={showSkeleton} />
       </div>
 
@@ -56,15 +58,12 @@ export default function WalletPage() {
           ? SUPPORTED_CHAIN_IDS.map((chainId) => (
               <ChartSkeleton key={chainId} title={`${CHAINS[chainId].name} Balance History`} />
             ))
-          : SUPPORTED_CHAIN_IDS.map((chainId) => {
+          : SUPPORTED_CHAIN_IDS.filter((chainId) => {
               const history = data?.history.find((h) => h.chainId === chainId);
-              return (
-                <BalanceHistoryChart
-                  key={chainId}
-                  data={history ?? { chainId, snapshots: [] }}
-                  walletAddress={address}
-                />
-              );
+              return history && history.snapshots.length > 0;
+            }).map((chainId) => {
+              const history = data!.history.find((h) => h.chainId === chainId)!;
+              return <BalanceHistoryChart key={chainId} data={history} walletAddress={address} />;
             })}
       </div>
 

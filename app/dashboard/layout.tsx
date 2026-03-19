@@ -14,12 +14,20 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 
+function truncateAddress(value: string) {
+  if (/^0x[a-fA-F0-9]{40}$/.test(value)) {
+    return `${value.slice(0, 6)}...${value.slice(-4)}`;
+  }
+  return null;
+}
+
 function generateBreadcrumbs(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
   return segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
     const label = segment.charAt(0).toUpperCase() + segment.slice(1);
-    return { href, label };
+    const shortLabel = truncateAddress(segment);
+    return { href, label, shortLabel };
   });
 }
 
@@ -43,14 +51,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <React.Fragment key={crumb.href}>
                       <BreadcrumbItem>
                         {isLast ? (
-                          <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                          <BreadcrumbPage>
+                            {crumb.shortLabel ? (
+                              <>
+                                <span className="md:hidden">{crumb.shortLabel}</span>
+                                <span className="hidden md:inline">{crumb.label}</span>
+                              </>
+                            ) : (
+                              crumb.label
+                            )}
+                          </BreadcrumbPage>
                         ) : (
-                          <BreadcrumbLink href={crumb.href} className="hidden md:block">
-                            {crumb.label}
+                          <BreadcrumbLink href={crumb.href}>
+                            {crumb.shortLabel ? (
+                              <>
+                                <span className="md:hidden">{crumb.shortLabel}</span>
+                                <span className="hidden md:inline">{crumb.label}</span>
+                              </>
+                            ) : (
+                              crumb.label
+                            )}
                           </BreadcrumbLink>
                         )}
                       </BreadcrumbItem>
-                      {!isLast && <BreadcrumbSeparator className="hidden md:block" />}
+                      {!isLast && <BreadcrumbSeparator />}
                     </React.Fragment>
                   );
                 })}
