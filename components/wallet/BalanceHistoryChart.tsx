@@ -1,6 +1,7 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -21,6 +22,7 @@ interface BalanceHistoryChartProps {
 
 export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChartProps) {
   const chain = CHAINS[data.chainId];
+  const isMobile = useIsMobile();
 
   const chartData = data.snapshots.map((snapshot) => ({
     date: snapshot.date,
@@ -56,7 +58,7 @@ export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChart
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-muted-foreground flex h-[200px] items-center justify-center text-sm">
+          <div className="text-muted-foreground flex h-[160px] items-center justify-center text-sm md:h-[200px]">
             No transaction history
           </div>
         </CardContent>
@@ -85,13 +87,13 @@ export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChart
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ChartContainer config={chartConfig} className="h-[160px] w-full md:h-[200px]">
           <AreaChart
             accessibilityLayer
             data={chartData}
             margin={{
-              left: 12,
-              right: 12,
+              left: isMobile ? 0 : 12,
+              right: isMobile ? 4 : 12,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -100,17 +102,20 @@ export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChart
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              tick={{ fontSize: isMobile ? 10 : 12 }}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
               }}
             />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => formatCompactNumber(value)}
-              width={60}
-            />
+            {!isMobile && (
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => formatCompactNumber(value)}
+                width={60}
+              />
+            )}
             <ChartTooltip
               cursor={false}
               content={

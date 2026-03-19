@@ -148,7 +148,7 @@ export function WalletBalanceCard({ balances, isLoading }: WalletBalanceCardProp
               <span>Chain</span>
               <div className="flex items-center gap-4">
                 <span>Balance</span>
-                <span className="w-14 text-right">Share</span>
+                <span className="w-12 text-right">Share</span>
               </div>
             </div>
             <div className="divide-y">
@@ -160,23 +160,25 @@ export function WalletBalanceCard({ balances, isLoading }: WalletBalanceCardProp
                       totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : "0.0";
                     return (
                       <div key={item.chainId} className="flex items-center justify-between py-2.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-1.5">
                           <div
-                            className="h-2.5 w-2.5 rounded-full"
+                            className="h-2.5 w-2.5 shrink-0 rounded-full"
                             style={{ backgroundColor: item.fill }}
                             aria-hidden="true"
                           />
-                          <span className="text-sm font-medium">{item.name}</span>
-                          <span className="text-muted-foreground text-xs">{item.shortName}</span>
+                          <span className="truncate text-sm font-medium">{item.name}</span>
+                          <span className="text-muted-foreground hidden text-xs sm:inline">
+                            {item.shortName}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex shrink-0 items-center gap-2 pl-2 sm:gap-4">
                           <span
-                            className={`font-mono text-sm tabular-nums ${isZero ? "text-muted-foreground" : ""}`}
+                            className={`font-mono text-xs tabular-nums sm:text-sm ${isZero ? "text-muted-foreground" : ""}`}
                           >
                             {formatTokenAmount(item.rawBalance, AUSD_DECIMALS)}
                           </span>
                           <span
-                            className={`w-14 text-right font-mono text-sm tabular-nums ${isZero ? "text-muted-foreground" : ""}`}
+                            className={`w-12 text-right font-mono text-xs tabular-nums sm:text-sm ${isZero ? "text-muted-foreground" : ""}`}
                           >
                             {pct}%
                           </span>
