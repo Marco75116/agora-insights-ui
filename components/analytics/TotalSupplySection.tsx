@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTotalSupplyDaily } from "@/hooks/useTotalSupplyDaily";
-import { useMintBurnStats } from "@/hooks/useMintBurnStats";
 import { TotalSupplyChart } from "@/components/analytics/TotalSupplyChart";
 import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
 import type { ChainId } from "@/constants/chains";
@@ -23,9 +22,8 @@ export function TotalSupplySection() {
     isLoading: supplyLoading,
     error: supplyError,
   } = useTotalSupplyDaily({ months, chainId });
-  const { data: mintBurnData, isLoading: mintBurnLoading } = useMintBurnStats({ months, chainId });
 
-  const isLoading = supplyLoading || mintBurnLoading;
+  const isLoading = supplyLoading;
 
   function updateParams(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -48,7 +46,6 @@ export function TotalSupplySection() {
   return (
     <TotalSupplyChart
       supplyData={supplyData.stats}
-      mintBurnData={mintBurnData?.stats ?? []}
       chainId={chainId}
       months={months}
       onMonthsChange={(value) => updateParams("supplyMonths", value)}
