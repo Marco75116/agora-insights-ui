@@ -1,5 +1,11 @@
 import clickhouseClient from "@/lib/clients/clickhouse.client";
-import { AUSD_ADDRESS_LOWER, CHAINS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
+import {
+  AUSD_ADDRESS,
+  AUSD_ADDRESS_LOWER,
+  CHAINS,
+  SUPPORTED_CHAIN_IDS,
+  type ChainId,
+} from "@/constants/chains";
 import type {
   ChainMetrics,
   AusdOverviewMetrics,
@@ -59,22 +65,39 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
 }
 
 async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        chain_id,
-        toString(sum(amount)) as total_supply
-      FROM total_supply FINAL
-      WHERE token_address = {tokenAddress:FixedString(42)}
-      GROUP BY chain_id
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-    },
-    format: "JSONEachRow",
-  });
+  const apiKey = process.env.MISTI_API_KEY;
+  if (!apiKey) {
+    throw new Error("MISTI_API_KEY environment variable is not set");
+  }
 
-  return (await result.json()) as SupplyResult[];
+  const responses = await Promise.all(
+    SUPPORTED_CHAIN_IDS.map(async (chainId) => {
+      const url = new URL("https://api.misti.app/v1/erc20/supply");
+      url.searchParams.set("chain_id", chainId.toString());
+      url.searchParams.set("token", AUSD_ADDRESS);
+
+      const res = await fetch(url, {
+        headers: { "x-api-key": apiKey },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Misti API error for chain ${chainId}: ${res.status} ${res.statusText}`);
+      }
+
+      const data = (await res.json()) as {
+        token_address: string;
+        chain_id: number;
+        total_supply: string;
+      }[];
+
+      return data.map((item) => ({
+        chain_id: item.chain_id,
+        total_supply: item.total_supply,
+      }));
+    })
+  );
+
+  return responses.flat();
 }
 
 async function getHoldersCountByChain(): Promise<HoldersResult[]> {
