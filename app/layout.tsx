@@ -29,7 +29,7 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#ffffff" />
         <Script
-          src="https://umami-poocsgkg04o440ws0s04wgcg.marco33.fr/script.js"
+          src="https://umami.marco33.fr/script.js"
           data-website-id="ac0b8054-4b43-4f31-91c2-962fd2c07824"
         />
       </head>
