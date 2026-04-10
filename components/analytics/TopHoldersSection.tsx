@@ -4,14 +4,13 @@ import { ChainSelect } from "@/components/analytics/ChainSelect";
 import { type ChainId } from "@/constants/chains";
 import type { TopHoldersResponse, ApiResponse } from "@/types/Analytics";
 import { TopHoldersTable } from "@/components/analytics/TopHoldersTable";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+import { env } from "@/lib/env";
 
 async function fetchTopHolders(chainId: ChainId, limit: number): Promise<TopHoldersResponse> {
   "use cache";
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
-  const url = new URL(`${BASE_URL}/api/ausd/top-holders`);
+  const url = new URL(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/top-holders`);
   url.searchParams.set("limit", limit.toString());
   url.searchParams.set("chainId", chainId.toString());
 

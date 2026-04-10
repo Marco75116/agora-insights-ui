@@ -6,6 +6,8 @@ import {
   SUPPORTED_CHAIN_IDS,
   type ChainId,
 } from "@/constants/chains";
+import { env } from "@/lib/env";
+import { MISTI_BASE_URL } from "@/constants/global";
 import type {
   ChainMetrics,
   AusdOverviewMetrics,
@@ -65,14 +67,11 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
 }
 
 async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
-  const apiKey = process.env.MISTI_API_KEY;
-  if (!apiKey) {
-    throw new Error("MISTI_API_KEY environment variable is not set");
-  }
+  const apiKey = env.MISTI_API_KEY;
 
   const responses = await Promise.all(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
-      const url = new URL("https://api.misti.app/v1/erc20/supply");
+      const url = new URL(`${MISTI_BASE_URL}/erc20/supply`);
       url.searchParams.set("chain_id", chainId.toString());
       url.searchParams.set("token", AUSD_ADDRESS);
 
@@ -101,14 +100,11 @@ async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
 }
 
 async function getHoldersCountByChain(): Promise<HoldersResult[]> {
-  const apiKey = process.env.MISTI_API_KEY;
-  if (!apiKey) {
-    throw new Error("MISTI_API_KEY environment variable is not set");
-  }
+  const apiKey = env.MISTI_API_KEY;
 
   const responses = await Promise.all(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
-      const url = new URL("https://api.misti.app/v1/erc20/holder-count");
+      const url = new URL(`${MISTI_BASE_URL}/erc20/holder-count`);
       url.searchParams.set("chain_id", chainId.toString());
       url.searchParams.set("token", AUSD_ADDRESS);
 
@@ -137,16 +133,13 @@ async function getHoldersCountByChain(): Promise<HoldersResult[]> {
 }
 
 export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
-  const apiKey = process.env.MISTI_API_KEY;
-  if (!apiKey) {
-    throw new Error("MISTI_API_KEY environment variable is not set");
-  }
+  const apiKey = env.MISTI_API_KEY;
 
-  const supplyUrl = new URL("https://api.misti.app/v1/erc20/supply");
+  const supplyUrl = new URL(`${MISTI_BASE_URL}/erc20/supply`);
   supplyUrl.searchParams.set("chain_id", chainId.toString());
   supplyUrl.searchParams.set("token", AUSD_ADDRESS);
 
-  const holderCountUrl = new URL("https://api.misti.app/v1/erc20/holder-count");
+  const holderCountUrl = new URL(`${MISTI_BASE_URL}/erc20/holder-count`);
   holderCountUrl.searchParams.set("chain_id", chainId.toString());
   holderCountUrl.searchParams.set("token", AUSD_ADDRESS);
 
@@ -357,10 +350,7 @@ export interface TopHoldersFilter {
 }
 
 export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopHoldersResponse> {
-  const apiKey = process.env.MISTI_API_KEY;
-  if (!apiKey) {
-    throw new Error("MISTI_API_KEY environment variable is not set");
-  }
+  const apiKey = env.MISTI_API_KEY;
 
   const { limit = 10, chainId } = filter;
   const headers = { "x-api-key": apiKey };
@@ -368,7 +358,7 @@ export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopH
 
   const responses = await Promise.all(
     chainIds.map(async (cId) => {
-      const url = new URL("https://api.misti.app/v1/erc20/holders");
+      const url = new URL(`${MISTI_BASE_URL}/erc20/holders`);
       url.searchParams.set("chain_id", cId.toString());
       url.searchParams.set("token", AUSD_ADDRESS);
       url.searchParams.set("first", limit.toString());

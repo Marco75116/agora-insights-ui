@@ -1,14 +1,13 @@
 import { cacheLife } from "next/cache";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
 import type { AusdOverviewMetrics, ApiResponse } from "@/types/Analytics";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+import { env } from "@/lib/env";
 
 async function fetchAusdOverview(): Promise<AusdOverviewMetrics> {
   "use cache";
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
-  const response = await fetch(`${BASE_URL}/api/ausd/overview`);
+  const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/overview`);
   const result: ApiResponse<AusdOverviewMetrics> = await response.json();
 
   if (result.status === "error" || !result.data) {
