@@ -344,8 +344,9 @@ export async function getTotalSupplyDaily(
   };
 }
 
-interface TopHolderResult {
+interface MistiHolder {
   wallet_address: string;
+  token_address: string;
   chain_id: number;
   balance: string;
 }
@@ -356,60 +357,56 @@ export interface TopHoldersFilter {
 }
 
 export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopHoldersResponse> {
+  const apiKey = process.env.MISTI_API_KEY;
+  if (!apiKey) {
+    throw new Error("MISTI_API_KEY environment variable is not set");
+  }
+
   const { limit = 10, chainId } = filter;
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
+  const headers = { "x-api-key": apiKey };
+  const chainIds = chainId ? [chainId] : SUPPORTED_CHAIN_IDS;
 
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        wallet_address,
-        chain_id,
-        toString(amount) as balance
-      FROM balances FINAL
-      WHERE token_address = {tokenAddress:FixedString(42)}
-        AND amount > 0
-        ${chainCondition}
-        AND wallet_address IN (
-          SELECT wallet_address
-          FROM balances FINAL
-          WHERE token_address = {tokenAddress:FixedString(42)}
-            AND amount > 0
-            ${chainCondition}
-          GROUP BY wallet_address
-          ORDER BY sum(amount) DESC
-          LIMIT {limit:UInt32}
-        )
-      ORDER BY wallet_address, chain_id
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-      limit,
-      ...(chainId && { chainId }),
-    },
-    format: "JSONEachRow",
-  });
+  const responses = await Promise.all(
+    chainIds.map(async (cId) => {
+      const url = new URL("https://api.misti.app/v1/erc20/holders");
+      url.searchParams.set("chain_id", cId.toString());
+      url.searchParams.set("token", AUSD_ADDRESS);
+      url.searchParams.set("first", limit.toString());
+      url.searchParams.set("sort", "desc");
 
-  const rows = (await result.json()) as TopHolderResult[];
+      const res = await fetch(url, { headers });
+
+      if (!res.ok) {
+        throw new Error(
+          `Misti API error for holders on chain ${cId}: ${res.status} ${res.statusText}`
+        );
+      }
+
+      return (await res.json()) as MistiHolder[];
+    })
+  );
 
   const holdersMap = new Map<string, TopHolder>();
-  for (const row of rows) {
-    const existing = holdersMap.get(row.wallet_address);
-    const chainBalance = { chainId: row.chain_id as ChainId, balance: row.balance };
-    if (existing) {
-      existing.chainBalances.push(chainBalance);
-      existing.totalBalance = (BigInt(existing.totalBalance) + BigInt(row.balance)).toString();
-    } else {
-      holdersMap.set(row.wallet_address, {
-        walletAddress: row.wallet_address,
-        totalBalance: row.balance,
-        chainBalances: [chainBalance],
-      });
+  for (const chainHolders of responses) {
+    for (const row of chainHolders) {
+      const existing = holdersMap.get(row.wallet_address);
+      const chainBalance = { chainId: row.chain_id as ChainId, balance: row.balance };
+      if (existing) {
+        existing.chainBalances.push(chainBalance);
+        existing.totalBalance = (BigInt(existing.totalBalance) + BigInt(row.balance)).toString();
+      } else {
+        holdersMap.set(row.wallet_address, {
+          walletAddress: row.wallet_address,
+          totalBalance: row.balance,
+          chainBalances: [chainBalance],
+        });
+      }
     }
   }
 
-  const holders = Array.from(holdersMap.values()).sort((a, b) =>
-    BigInt(b.totalBalance) > BigInt(a.totalBalance) ? 1 : -1
-  );
+  const holders = Array.from(holdersMap.values())
+    .sort((a, b) => (BigInt(b.totalBalance) > BigInt(a.totalBalance) ? 1 : -1))
+    .slice(0, limit);
 
   return {
     holders,
