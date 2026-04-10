@@ -37,12 +37,24 @@ interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+const VALID_MONTHS = [1, 3, 6, 12];
+
 export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const holdersChainIdRaw =
     typeof params.holdersChainId === "string" ? parseInt(params.holdersChainId, 10) : NaN;
   const holdersChainId: ChainId = SUPPORTED_CHAIN_IDS.includes(holdersChainIdRaw as ChainId)
     ? (holdersChainIdRaw as ChainId)
+    : CHAIN_IDS.ETHEREUM;
+
+  const supplyMonthsRaw =
+    typeof params.supplyMonths === "string" ? parseInt(params.supplyMonths, 10) : NaN;
+  const supplyMonths = VALID_MONTHS.includes(supplyMonthsRaw) ? supplyMonthsRaw : 1;
+
+  const supplyChainIdRaw =
+    typeof params.supplyChainId === "string" ? parseInt(params.supplyChainId, 10) : NaN;
+  const supplyChainId: ChainId = SUPPORTED_CHAIN_IDS.includes(supplyChainIdRaw as ChainId)
+    ? (supplyChainIdRaw as ChainId)
     : CHAIN_IDS.ETHEREUM;
 
   return (
@@ -65,7 +77,7 @@ export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
       </div>
 
       <Suspense fallback={<TotalSupplyFallback />}>
-        <TotalSupplySection />
+        <TotalSupplySection months={supplyMonths} chainId={supplyChainId} />
       </Suspense>
 
       <Suspense fallback={<Skeleton className="h-4 w-48" />}>

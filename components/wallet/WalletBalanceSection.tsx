@@ -3,22 +3,14 @@ import { WalletBalanceCard } from "@/components/wallet/WalletBalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { SUPPORTED_CHAIN_IDS } from "@/constants/chains";
-import { env } from "@/lib/env";
 import type { WalletBalanceData } from "@/types/WalletBalance";
-import type { ApiResponse } from "@/types/Analytics";
+import { getWalletBalanceData } from "@/lib/services/wallet.service";
 
 async function fetchWalletData(address: string): Promise<WalletBalanceData> {
   "use cache";
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
-  const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/wallet/${address}`);
-  const result: ApiResponse<WalletBalanceData> = await response.json();
-
-  if (result.status === "error" || !result.data) {
-    throw new Error(result.message ?? "Failed to fetch wallet data");
-  }
-
-  return result.data;
+  return await getWalletBalanceData(address);
 }
 
 interface WalletBalanceSectionProps {
