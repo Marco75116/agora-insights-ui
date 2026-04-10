@@ -3,22 +3,36 @@ import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart"
 import type { AusdOverviewMetrics, ApiResponse } from "@/types/Analytics";
 import { env } from "@/lib/env";
 
-async function fetchAusdOverview(): Promise<AusdOverviewMetrics> {
+async function fetchAusdOverview(): Promise<AusdOverviewMetrics | null> {
   "use cache";
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
-  const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/overview`);
-  const result: ApiResponse<AusdOverviewMetrics> = await response.json();
+  try {
+    const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/overview`);
+    const result: ApiResponse<AusdOverviewMetrics> = await response.json();
 
-  if (result.status === "error" || !result.data) {
-    throw new Error(result.message ?? "Failed to fetch AUSD overview");
+    if (result.status === "error" || !result.data) {
+      console.error("[ChainBreakdownSection] API error:", result.message);
+      return null;
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("[ChainBreakdownSection] Fetch failed:", error);
+    return null;
   }
-
-  return result.data;
 }
 
 export async function ChainBreakdownSection() {
   const data = await fetchAusdOverview();
+
+  if (!data) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        Chain breakdown data is temporarily unavailable.
+      </p>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
