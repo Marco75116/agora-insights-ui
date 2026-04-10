@@ -1,11 +1,5 @@
 import { Elysia, t } from "elysia";
-import {
-  getAusdMetrics,
-  getTransferStatsDaily,
-  getMintBurnStatsDaily,
-  getTotalSupplyDaily,
-  getTopHolders,
-} from "@/lib/services/ausd.service";
+import { getAusdMetrics, getTotalSupplyDaily, getTopHolders } from "@/lib/services/ausd.service";
 import { getWalletBalanceData } from "@/lib/services/wallet.service";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
 import { SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
@@ -36,74 +30,6 @@ const app = new Elysia({ prefix: "/api" })
       return { status: "error", message: String(error) };
     }
   })
-  .get(
-    "/ausd/transfer-stats",
-    async ({ query }) => {
-      try {
-        const months = parseMonths(query.months);
-        if (months === null) {
-          return {
-            status: "error",
-            message: `Invalid months. Allowed: ${VALID_MONTHS.join(", ")}`,
-          };
-        }
-
-        const chainId = query.chainId ? parseChainId(query.chainId) : undefined;
-        if (query.chainId && chainId === null) {
-          return {
-            status: "error",
-            message: `Invalid chainId. Allowed: ${SUPPORTED_CHAIN_IDS.join(", ")}`,
-          };
-        }
-
-        const stats = await getTransferStatsDaily({ months, chainId: chainId ?? undefined });
-        return { status: "ok", data: stats };
-      } catch (error) {
-        console.error("Transfer stats error:", error);
-        return { status: "error", message: String(error) };
-      }
-    },
-    {
-      query: t.Object({
-        months: t.Optional(t.String()),
-        chainId: t.Optional(t.String()),
-      }),
-    }
-  )
-  .get(
-    "/ausd/mint-burn-stats",
-    async ({ query }) => {
-      try {
-        const months = parseMonths(query.months);
-        if (months === null) {
-          return {
-            status: "error",
-            message: `Invalid months. Allowed: ${VALID_MONTHS.join(", ")}`,
-          };
-        }
-
-        const chainId = query.chainId ? parseChainId(query.chainId) : undefined;
-        if (query.chainId && chainId === null) {
-          return {
-            status: "error",
-            message: `Invalid chainId. Allowed: ${SUPPORTED_CHAIN_IDS.join(", ")}`,
-          };
-        }
-
-        const stats = await getMintBurnStatsDaily({ months, chainId: chainId ?? undefined });
-        return { status: "ok", data: stats };
-      } catch (error) {
-        console.error("Mint/burn stats error:", error);
-        return { status: "error", message: String(error) };
-      }
-    },
-    {
-      query: t.Object({
-        months: t.Optional(t.String()),
-        chainId: t.Optional(t.String()),
-      }),
-    }
-  )
   .get(
     "/ausd/total-supply-daily",
     async ({ query }) => {

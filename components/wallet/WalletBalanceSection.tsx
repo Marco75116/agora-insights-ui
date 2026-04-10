@@ -1,7 +1,6 @@
 import { cacheLife } from "next/cache";
 import { WalletBalanceCard } from "@/components/wallet/WalletBalanceCard";
 import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
-import { LastBlockInfo } from "@/components/analytics/LastBlockInfo";
 import { SUPPORTED_CHAIN_IDS } from "@/constants/chains";
 import { env } from "@/lib/env";
 import type { WalletBalanceData } from "@/types/WalletBalance";
@@ -43,10 +42,6 @@ export async function WalletBalanceSection({ address }: WalletBalanceSectionProp
           return <BalanceHistoryChart key={chainId} data={history} walletAddress={address} />;
         })}
       </div>
-
-      {data.lastUpdated && (
-        <LastBlockInfo lastUpdated={data.lastUpdated} lastBlockByChain={data.lastBlockByChain} />
-      )}
     </>
   );
 }
