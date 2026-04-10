@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TransferStatsResponse, ApiResponse } from "@/types/Analytics";
 import type { ChainId } from "@/constants/chains";
+import { env } from "@/lib/env";
 
 const STALE_TIME = 30 * 1000;
 const REFETCH_INTERVAL = 60 * 1000;
@@ -22,7 +23,9 @@ async function fetchTransferStats(filter: TransferStatsFilter): Promise<Transfer
     params.set("chainId", filter.chainId.toString());
   }
 
-  const response = await fetch(`/api/ausd/transfer-stats?${params.toString()}`);
+  const response = await fetch(
+    `${env.NEXT_PUBLIC_BASE_URL}/api/ausd/transfer-stats?${params.toString()}`
+  );
   const result: ApiResponse<TransferStatsResponse> = await response.json();
 
   if (result.status === "error") {
