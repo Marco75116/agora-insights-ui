@@ -24,13 +24,6 @@ export async function ChainBreakdownSection() {
     <>
       <ChainBreakdownChart data={data.chainBreakdown} metric="supply" isLoading={false} />
       <ChainBreakdownChart data={data.chainBreakdown} metric="holders" isLoading={false} />
-      <p className="text-muted-foreground col-span-full text-xs">
-        Last updated:{" "}
-        {new Intl.DateTimeFormat(undefined, {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(new Date(data.lastUpdated))}
-      </p>
     </>
   );
 }
