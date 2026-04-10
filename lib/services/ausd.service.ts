@@ -6,7 +6,8 @@ import {
   SUPPORTED_CHAIN_IDS,
   type ChainId,
 } from "@/constants/chains";
-import { env, MISTI_BASE_URL } from "@/lib/env";
+import { env } from "@/lib/env";
+import { MISTI_BASE_URL } from "@/constants/global";
 import type {
   ChainMetrics,
   AusdOverviewMetrics,

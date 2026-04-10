@@ -21,5 +21,3 @@ export const env = {
     return optionalEnv("NEXT_PUBLIC_BASE_URL", "http://localhost:3000");
   },
 } as const;
-
-export const MISTI_BASE_URL = "https://api.misti.app/v1";
