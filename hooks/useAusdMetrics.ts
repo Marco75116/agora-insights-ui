@@ -2,12 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { AusdOverviewMetrics, ApiResponse } from "@/types/Analytics";
+import { env } from "@/lib/env";
 
 const STALE_TIME = 30 * 1000;
 const REFETCH_INTERVAL = 60 * 1000;
 
 async function fetchAusdMetrics(): Promise<AusdOverviewMetrics> {
-  const response = await fetch("/api/ausd/overview");
+  const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/overview`);
   const result: ApiResponse<AusdOverviewMetrics> = await response.json();
 
   if (result.status === "error") {

@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TotalSupplyDailyResponse, ApiResponse } from "@/types/Analytics";
 import type { ChainId } from "@/constants/chains";
+import { env } from "@/lib/env";
 
 const STALE_TIME = 30 * 1000;
 const REFETCH_INTERVAL = 60 * 1000;
@@ -22,7 +23,9 @@ async function fetchTotalSupplyDaily(
     params.set("months", filter.months.toString());
   }
 
-  const response = await fetch(`/api/ausd/total-supply-daily?${params.toString()}`);
+  const response = await fetch(
+    `${env.NEXT_PUBLIC_BASE_URL}/api/ausd/total-supply-daily?${params.toString()}`
+  );
   const result: ApiResponse<TotalSupplyDailyResponse> = await response.json();
 
   if (result.status === "error") {
