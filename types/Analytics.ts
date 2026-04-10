@@ -15,7 +15,6 @@ export interface AusdOverviewMetrics {
   totalSupplyAcrossChains: string;
   totalHoldersAcrossChains: number;
   chainBreakdown: ChainMetrics[];
-  lastBlockByChain: LastBlockByChain[];
   lastUpdated: string;
 }
 

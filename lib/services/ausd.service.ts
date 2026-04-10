@@ -33,10 +33,9 @@ interface HoldersResult {
 }
 
 export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
-  const [supplyData, holdersData, lastBlockData] = await Promise.all([
+  const [supplyData, holdersData] = await Promise.all([
     getTotalSupplyByChain(),
     getHoldersCountByChain(),
-    getLastBlockByChain(),
   ]);
 
   const supplyMap = new Map(supplyData.map((s) => [s.chain_id, s.total_supply]));
@@ -61,7 +60,6 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
     totalSupplyAcrossChains,
     totalHoldersAcrossChains,
     chainBreakdown,
-    lastBlockByChain: lastBlockData,
     lastUpdated: new Date().toISOString(),
   };
 }
