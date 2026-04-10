@@ -78,11 +78,11 @@ export function AppSidebar() {
           <Image
             src="/misti-logo.png"
             alt="Misti"
-            width={20}
-            height={20}
+            width={28}
+            height={28}
             className="shrink-0 rounded"
           />
-          <span className="text-muted-foreground text-xs group-data-[collapsible=icon]:hidden">
+          <span className="text-muted-foreground text-sm font-medium group-data-[collapsible=icon]:hidden">
             Powered by Misti
           </span>
         </a>
