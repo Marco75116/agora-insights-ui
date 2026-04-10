@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -67,6 +68,25 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t p-4">
+        <a
+          href="https://app.misti.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2"
+        >
+          <Image
+            src="/misti-logo.png"
+            alt="Misti"
+            width={20}
+            height={20}
+            className="shrink-0 rounded"
+          />
+          <span className="text-muted-foreground text-xs group-data-[collapsible=icon]:hidden">
+            Powered by Misti
+          </span>
+        </a>
+      </SidebarFooter>
     </Sidebar>
   );
 }
