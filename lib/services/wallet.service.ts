@@ -1,5 +1,4 @@
-import clickhouseClient from "@/lib/clients/clickhouse.client";
-import { AUSD_ADDRESS, AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
+import { AUSD_ADDRESS, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
 import { getLastBlockByChain } from "@/lib/services/ausd.service";
 import { env } from "@/lib/env";
 import { MISTI_BASE_URL } from "@/constants/global";
@@ -10,8 +9,10 @@ import type {
   WalletBalanceData,
 } from "@/types/WalletBalance";
 
-interface BalanceResult {
+interface MistiBalanceEntry {
+  token_address: string;
   chain_id: number;
+  wallet_address: string;
   balance: string;
 }
 
@@ -55,25 +56,29 @@ export async function getWalletBalanceData(walletAddress: string): Promise<Walle
   };
 }
 
-async function getWalletBalances(walletAddress: string): Promise<BalanceResult[]> {
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        chain_id,
-        toString(sum(amount)) as balance
-      FROM balances FINAL
-      WHERE wallet_address = {walletAddress:FixedString(42)}
-        AND token_address = {tokenAddress:FixedString(42)}
-      GROUP BY chain_id
-    `,
-    query_params: {
-      walletAddress,
-      tokenAddress: AUSD_ADDRESS_LOWER,
-    },
-    format: "JSONEachRow",
-  });
+async function getWalletBalances(walletAddress: string): Promise<MistiBalanceEntry[]> {
+  const apiKey = env.MISTI_API_KEY;
 
-  return (await result.json()) as BalanceResult[];
+  const results = await Promise.all(
+    SUPPORTED_CHAIN_IDS.map(async (chainId) => {
+      const url = new URL(`${MISTI_BASE_URL}/erc20/balance`);
+      url.searchParams.set("chain_id", chainId.toString());
+      url.searchParams.set("token", AUSD_ADDRESS);
+      url.searchParams.set("wallet", walletAddress);
+
+      const res = await fetch(url, {
+        headers: { "x-api-key": apiKey },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Misti API error for chain ${chainId}: ${res.status} ${res.statusText}`);
+      }
+
+      return (await res.json()) as MistiBalanceEntry[];
+    })
+  );
+
+  return results.flat();
 }
 
 async function getBalanceHistoryAllChains(
