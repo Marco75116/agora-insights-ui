@@ -56,7 +56,7 @@ export async function getWalletBalanceData(walletAddress: string): Promise<Walle
 async function getWalletBalances(walletAddress: string): Promise<MistiBalanceEntry[]> {
   const apiKey = env.MISTI_API_KEY;
 
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
       const url = new URL(`${MISTI_BASE_URL}/erc20/balance`);
       url.searchParams.set("chain_id", chainId.toString());
@@ -75,7 +75,9 @@ async function getWalletBalances(walletAddress: string): Promise<MistiBalanceEnt
     })
   );
 
-  return results.flat();
+  return results
+    .filter((r): r is PromiseFulfilledResult<MistiBalanceEntry[]> => r.status === "fulfilled")
+    .flatMap((r) => r.value);
 }
 
 async function getBalanceHistoryAllChains(
@@ -87,7 +89,7 @@ async function getBalanceHistoryAllChains(
   const startDate = new Date(today);
   startDate.setDate(startDate.getDate() - 365);
 
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
       const url = new URL(`${MISTI_BASE_URL}/erc20/balance-history`);
       url.searchParams.set("chain_id", chainId.toString());
@@ -110,8 +112,10 @@ async function getBalanceHistoryAllChains(
   );
 
   const map = new Map<number, MistiBalanceHistoryEntry[]>();
-  for (const { chainId, data } of results) {
-    map.set(chainId, data);
+  for (const result of results) {
+    if (result.status === "fulfilled") {
+      map.set(result.value.chainId, result.value.data);
+    }
   }
   return map;
 }

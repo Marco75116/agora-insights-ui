@@ -55,7 +55,7 @@ export async function getAusdMetrics(): Promise<AusdOverviewMetrics> {
 async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
   const apiKey = env.MISTI_API_KEY;
 
-  const responses = await Promise.all(
+  const results = await Promise.allSettled(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
       const url = new URL(`${MISTI_BASE_URL}/erc20/supply`);
       url.searchParams.set("chain_id", chainId.toString());
@@ -82,13 +82,15 @@ async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
     })
   );
 
-  return responses.flat();
+  return results
+    .filter((r): r is PromiseFulfilledResult<SupplyResult[]> => r.status === "fulfilled")
+    .flatMap((r) => r.value);
 }
 
 async function getHoldersCountByChain(): Promise<HoldersResult[]> {
   const apiKey = env.MISTI_API_KEY;
 
-  const responses = await Promise.all(
+  const results = await Promise.allSettled(
     SUPPORTED_CHAIN_IDS.map(async (chainId) => {
       const url = new URL(`${MISTI_BASE_URL}/erc20/holder-count`);
       url.searchParams.set("chain_id", chainId.toString());
@@ -115,7 +117,9 @@ async function getHoldersCountByChain(): Promise<HoldersResult[]> {
     })
   );
 
-  return responses.flat();
+  return results
+    .filter((r): r is PromiseFulfilledResult<HoldersResult[]> => r.status === "fulfilled")
+    .flatMap((r) => r.value);
 }
 
 interface MistiSupplyHistoryResult {
@@ -184,7 +188,7 @@ export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopH
   const headers = { "x-api-key": apiKey };
   const chainIds = chainId ? [chainId] : SUPPORTED_CHAIN_IDS;
 
-  const responses = await Promise.all(
+  const results = await Promise.allSettled(
     chainIds.map(async (cId) => {
       const url = new URL(`${MISTI_BASE_URL}/erc20/holders`);
       url.searchParams.set("chain_id", cId.toString());
@@ -203,6 +207,10 @@ export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopH
       return (await res.json()) as MistiHolder[];
     })
   );
+
+  const responses = results
+    .filter((r): r is PromiseFulfilledResult<MistiHolder[]> => r.status === "fulfilled")
+    .map((r) => r.value);
 
   const holdersMap = new Map<string, TopHolder>();
   for (const chainHolders of responses) {
