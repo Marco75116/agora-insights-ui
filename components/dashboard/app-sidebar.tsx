@@ -69,7 +69,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-2">
+        <a
+          href="https://app.misti.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2"
+        >
           <Image
             src="/misti-logo.png"
             alt="Misti"
@@ -80,7 +85,7 @@ export function AppSidebar() {
           <span className="text-muted-foreground text-xs group-data-[collapsible=icon]:hidden">
             Powered by Misti
           </span>
-        </div>
+        </a>
       </SidebarFooter>
     </Sidebar>
   );
