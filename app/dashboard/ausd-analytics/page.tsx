@@ -22,10 +22,10 @@ function ChartSkeleton() {
 
 function ChainBreakdownFallback() {
   return (
-    <>
+    <div className="grid grid-cols-2 gap-4">
       <ChartSkeleton />
       <ChartSkeleton />
-    </>
+    </div>
   );
 }
 
@@ -54,7 +54,7 @@ export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[8fr_8fr_5fr]">
+      <div className="grid gap-4 lg:grid-cols-[4fr_1fr]">
         <Suspense fallback={<ChainBreakdownFallback />}>
           <ChainBreakdownSection />
         </Suspense>

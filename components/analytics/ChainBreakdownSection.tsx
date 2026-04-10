@@ -21,9 +21,11 @@ export async function ChainBreakdownSection() {
   const data = await fetchAusdOverview();
 
   return (
-    <>
-      <ChainBreakdownChart data={data.chainBreakdown} metric="supply" isLoading={false} />
-      <ChainBreakdownChart data={data.chainBreakdown} metric="holders" isLoading={false} />
-    </>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-4">
+        <ChainBreakdownChart data={data.chainBreakdown} metric="supply" isLoading={false} />
+        <ChainBreakdownChart data={data.chainBreakdown} metric="holders" isLoading={false} />
+      </div>
+    </div>
   );
 }

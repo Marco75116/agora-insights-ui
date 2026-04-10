@@ -1,5 +1,4 @@
 import type { ChainId } from "@/constants/chains";
-import type { LastBlockByChain } from "@/types/Analytics";
 
 export interface ChainBalance {
   chainId: ChainId;
@@ -20,6 +19,5 @@ export interface WalletBalanceData {
   walletAddress: string;
   balances: ChainBalance[];
   history: ChainBalanceHistory[];
-  lastBlockByChain: LastBlockByChain[];
   lastUpdated: string;
 }

@@ -1,5 +1,4 @@
 export const AUSD_ADDRESS = "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a";
-export const AUSD_ADDRESS_LOWER = "0x00000000efe302beaa2b3e6e1b18d08d69a9012a";
 export const AUSD_DECIMALS = 6;
 
 export const CHAIN_IDS = {

@@ -1,21 +1,9 @@
-import clickhouseClient from "@/lib/clients/clickhouse.client";
-import {
-  AUSD_ADDRESS,
-  AUSD_ADDRESS_LOWER,
-  CHAINS,
-  SUPPORTED_CHAIN_IDS,
-  type ChainId,
-} from "@/constants/chains";
+import { AUSD_ADDRESS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
 import { env } from "@/lib/env";
 import { MISTI_BASE_URL } from "@/constants/global";
 import type {
   ChainMetrics,
   AusdOverviewMetrics,
-  LastBlockByChain,
-  DailyTransferStats,
-  TransferStatsResponse,
-  DailyMintBurnStats,
-  MintBurnStatsResponse,
   DailyTotalSupply,
   TotalSupplyDailyResponse,
   TopHolder,
@@ -130,145 +118,6 @@ async function getHoldersCountByChain(): Promise<HoldersResult[]> {
   return responses.flat();
 }
 
-export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
-  const apiKey = env.MISTI_API_KEY;
-
-  const supplyUrl = new URL(`${MISTI_BASE_URL}/erc20/supply`);
-  supplyUrl.searchParams.set("chain_id", chainId.toString());
-  supplyUrl.searchParams.set("token", AUSD_ADDRESS);
-
-  const holderCountUrl = new URL(`${MISTI_BASE_URL}/erc20/holder-count`);
-  holderCountUrl.searchParams.set("chain_id", chainId.toString());
-  holderCountUrl.searchParams.set("token", AUSD_ADDRESS);
-
-  const headers = { "x-api-key": apiKey };
-
-  const [supplyRes, holderCountRes] = await Promise.all([
-    fetch(supplyUrl, { headers }),
-    fetch(holderCountUrl, { headers }),
-  ]);
-
-  if (!supplyRes.ok) {
-    throw new Error(
-      `Misti API error for supply on chain ${chainId}: ${supplyRes.status} ${supplyRes.statusText}`
-    );
-  }
-  if (!holderCountRes.ok) {
-    throw new Error(
-      `Misti API error for holder count on chain ${chainId}: ${holderCountRes.status} ${holderCountRes.statusText}`
-    );
-  }
-
-  const supplyData = (await supplyRes.json()) as {
-    token_address: string;
-    chain_id: number;
-    total_supply: string;
-  }[];
-  const holderCountData = (await holderCountRes.json()) as {
-    token_address: string;
-    chain_id: number;
-    holder_count: number;
-  }[];
-
-  return {
-    chainId,
-    totalSupply: supplyData[0]?.total_supply ?? "0",
-    holdersCount: holderCountData[0]?.holder_count ?? 0,
-  };
-}
-
-interface SyncResult {
-  id: string;
-  current: string;
-}
-
-interface SyncCursor {
-  number: number;
-}
-
-export async function getLastBlockByChain(): Promise<LastBlockByChain[]> {
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT id, current
-      FROM sync FINAL
-    `,
-    format: "JSONEachRow",
-  });
-
-  const data = (await result.json()) as SyncResult[];
-  const blockMap = new Map<string, number>();
-
-  for (const row of data) {
-    const cursor = JSON.parse(row.current) as SyncCursor;
-    const existing = blockMap.get(row.id);
-    if (!existing || cursor.number > existing) {
-      blockMap.set(row.id, cursor.number);
-    }
-  }
-
-  return SUPPORTED_CHAIN_IDS.map((chainId) => ({
-    chainId,
-    blockNumber: blockMap.get(CHAINS[chainId].tag) ?? 0,
-  }));
-}
-
-interface TransferStatsResult {
-  date: string;
-  transfer_count: string;
-  volume: string;
-}
-
-export interface TransferStatsFilter {
-  months?: number;
-  chainId?: ChainId;
-}
-
-export async function getTransferStatsDaily(
-  filter: TransferStatsFilter = {}
-): Promise<TransferStatsResponse> {
-  const { months = 1, chainId } = filter;
-  const days = months * 30;
-
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
-
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        toString(day) as date,
-        toString(sum(transfer_count)) as transfer_count,
-        toString(sum(volume)) as volume
-      FROM (
-        SELECT date as day, transfer_count, volume
-        FROM transfer_stats_daily FINAL
-        WHERE token_address = {tokenAddress:FixedString(42)}
-          AND date >= today() - {days:UInt32}
-          ${chainCondition}
-      )
-      GROUP BY day
-      ORDER BY day ASC
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-      days,
-      ...(chainId && { chainId }),
-    },
-    format: "JSONEachRow",
-  });
-
-  const data = (await result.json()) as TransferStatsResult[];
-
-  const stats: DailyTransferStats[] = data.map((row) => ({
-    date: row.date,
-    transferCount: parseInt(row.transfer_count, 10),
-    volume: row.volume,
-  }));
-
-  return {
-    stats,
-    lastUpdated: new Date().toISOString(),
-  };
-}
-
 interface MistiSupplyHistoryResult {
   date: string;
   total_supply: string;
@@ -379,69 +228,6 @@ export async function getTopHolders(filter: TopHoldersFilter = {}): Promise<TopH
 
   return {
     holders,
-    lastUpdated: new Date().toISOString(),
-  };
-}
-
-interface MintBurnStatsResult {
-  date: string;
-  mint_count: string;
-  mint_volume: string;
-  burn_count: string;
-  burn_volume: string;
-}
-
-export interface MintBurnStatsFilter {
-  months?: number;
-  chainId?: ChainId;
-}
-
-export async function getMintBurnStatsDaily(
-  filter: MintBurnStatsFilter = {}
-): Promise<MintBurnStatsResponse> {
-  const { months = 1, chainId } = filter;
-  const days = months * 30;
-
-  const chainCondition = chainId ? "AND chain_id = {chainId:UInt32}" : "";
-
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        toString(day) as date,
-        toString(sum(mint_count)) as mint_count,
-        toString(sum(mint_volume)) as mint_volume,
-        toString(sum(burn_count)) as burn_count,
-        toString(sum(burn_volume)) as burn_volume
-      FROM (
-        SELECT date as day, mint_count, mint_volume, burn_count, burn_volume
-        FROM mint_burn_daily FINAL
-        WHERE token_address = {tokenAddress:FixedString(42)}
-          AND date >= today() - {days:UInt32}
-          ${chainCondition}
-      )
-      GROUP BY day
-      ORDER BY day ASC
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-      days,
-      ...(chainId && { chainId }),
-    },
-    format: "JSONEachRow",
-  });
-
-  const data = (await result.json()) as MintBurnStatsResult[];
-
-  const stats: DailyMintBurnStats[] = data.map((row) => ({
-    date: row.date,
-    mintCount: parseInt(row.mint_count, 10),
-    mintVolume: row.mint_volume,
-    burnCount: parseInt(row.burn_count, 10),
-    burnVolume: row.burn_volume,
-  }));
-
-  return {
-    stats,
     lastUpdated: new Date().toISOString(),
   };
 }

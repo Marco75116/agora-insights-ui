@@ -6,11 +6,6 @@ export interface ChainMetrics {
   holdersCount: number;
 }
 
-export interface LastBlockByChain {
-  chainId: ChainId;
-  blockNumber: number;
-}
-
 export interface AusdOverviewMetrics {
   totalSupplyAcrossChains: string;
   totalHoldersAcrossChains: number;
@@ -22,30 +17,6 @@ export interface ApiResponse<T> {
   status: "ok" | "error";
   data?: T;
   message?: string;
-}
-
-export interface DailyTransferStats {
-  date: string;
-  transferCount: number;
-  volume: string;
-}
-
-export interface TransferStatsResponse {
-  stats: DailyTransferStats[];
-  lastUpdated: string;
-}
-
-export interface DailyMintBurnStats {
-  date: string;
-  mintCount: number;
-  mintVolume: string;
-  burnCount: number;
-  burnVolume: string;
-}
-
-export interface MintBurnStatsResponse {
-  stats: DailyMintBurnStats[];
-  lastUpdated: string;
 }
 
 export interface DailyTotalSupply {
