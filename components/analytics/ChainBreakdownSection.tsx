@@ -21,16 +21,18 @@ export async function ChainBreakdownSection() {
   const data = await fetchAusdOverview();
 
   return (
-    <>
-      <ChainBreakdownChart data={data.chainBreakdown} metric="supply" isLoading={false} />
-      <ChainBreakdownChart data={data.chainBreakdown} metric="holders" isLoading={false} />
-      <p className="text-muted-foreground col-span-full text-xs">
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-4">
+        <ChainBreakdownChart data={data.chainBreakdown} metric="supply" isLoading={false} />
+        <ChainBreakdownChart data={data.chainBreakdown} metric="holders" isLoading={false} />
+      </div>
+      <p className="text-muted-foreground text-xs">
         Last updated:{" "}
         {new Intl.DateTimeFormat(undefined, {
           dateStyle: "medium",
           timeStyle: "short",
         }).format(new Date(data.lastUpdated))}
       </p>
-    </>
+    </div>
   );
 }
