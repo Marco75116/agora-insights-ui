@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { ChainBreakdownSection } from "@/components/analytics/ChainBreakdownSection";
 import { TotalSupplySection } from "@/components/analytics/TotalSupplySection";
 import { TopHoldersSection } from "@/components/analytics/TopHoldersSection";
-import { LastBlockInfoSection } from "@/components/analytics/LastBlockInfoSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CHAIN_IDS, SUPPORTED_CHAIN_IDS, type ChainId } from "@/constants/chains";
@@ -66,10 +65,6 @@ export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
 
       <Suspense fallback={<TotalSupplyFallback />}>
         <TotalSupplySection />
-      </Suspense>
-
-      <Suspense fallback={<Skeleton className="h-4 w-64" />}>
-        <LastBlockInfoSection />
       </Suspense>
     </div>
   );
