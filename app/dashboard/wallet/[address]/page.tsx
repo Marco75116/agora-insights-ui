@@ -1,25 +1,35 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { WalletBalanceCard } from "@/components/wallet/WalletBalanceCard";
-import { BalanceHistoryChart } from "@/components/wallet/BalanceHistoryChart";
-import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { isValidEthereumAddress } from "@/lib/helpers/address";
 import { CHAINS, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
-import { LastBlockInfo } from "@/components/analytics/LastBlockInfo";
+import { ChartSkeleton } from "@/components/analytics/ChartSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { WalletBalanceSection } from "@/components/wallet/WalletBalanceSection";
 
-export default function WalletPage() {
-  const params = useParams();
-  const address = (params.address as string)?.toLowerCase();
-  const isInvalidAddress = address && !isValidEthereumAddress(address);
-
-  const { data, isLoading, error, isPending } = useWalletBalance(
-    isInvalidAddress ? undefined : address
+function WalletBalanceFallback() {
+  return (
+    <>
+      <div className="md:max-w-[50%]">
+        <ChartSkeleton title="AUSD Balances" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {SUPPORTED_CHAIN_IDS.map((chainId) => (
+          <ChartSkeleton key={chainId} title={`${CHAINS[chainId].name} Balance History`} />
+        ))}
+      </div>
+      <Skeleton className="h-4 w-64" />
+    </>
   );
+}
 
-  const showSkeleton = !isInvalidAddress && (isLoading || isPending || !data);
+interface PageProps {
+  params: Promise<{ address: string }>;
+}
+
+export default async function WalletPage({ params }: PageProps) {
+  const { address: rawAddress } = await params;
+  const address = rawAddress?.toLowerCase();
+  const isInvalidAddress = address && !isValidEthereumAddress(address);
 
   if (!address) {
     return (
@@ -29,10 +39,18 @@ export default function WalletPage() {
     );
   }
 
-  if (error) {
+  if (isInvalidAddress) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-destructive">Failed to load wallet data: {error.message}</p>
+      <div className="flex flex-1 flex-col gap-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-balance">Wallet Balance</h1>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground min-w-0 truncate font-mono text-xs sm:text-sm">
+              {address}
+            </p>
+            <Badge variant="destructive">Invalid format</Badge>
+          </div>
+        </div>
       </div>
     );
   }
@@ -41,35 +59,14 @@ export default function WalletPage() {
     <div className="flex flex-1 flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold text-balance">Wallet Balance</h1>
-        <div className="flex items-center gap-2">
-          <p className="text-muted-foreground min-w-0 truncate font-mono text-xs sm:text-sm">
-            {address}
-          </p>
-          {isInvalidAddress && <Badge variant="destructive">Invalid format</Badge>}
-        </div>
+        <p className="text-muted-foreground min-w-0 truncate font-mono text-xs sm:text-sm">
+          {address}
+        </p>
       </div>
 
-      <div className="md:max-w-[50%]">
-        <WalletBalanceCard balances={data?.balances ?? []} isLoading={showSkeleton} />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {showSkeleton
-          ? SUPPORTED_CHAIN_IDS.map((chainId) => (
-              <ChartSkeleton key={chainId} title={`${CHAINS[chainId].name} Balance History`} />
-            ))
-          : SUPPORTED_CHAIN_IDS.filter((chainId) => {
-              const history = data?.history.find((h) => h.chainId === chainId);
-              return history && history.snapshots.length > 0;
-            }).map((chainId) => {
-              const history = data!.history.find((h) => h.chainId === chainId)!;
-              return <BalanceHistoryChart key={chainId} data={history} walletAddress={address} />;
-            })}
-      </div>
-
-      {data?.lastUpdated && (
-        <LastBlockInfo lastUpdated={data.lastUpdated} lastBlockByChain={data.lastBlockByChain} />
-      )}
+      <Suspense fallback={<WalletBalanceFallback />}>
+        <WalletBalanceSection address={address} />
+      </Suspense>
     </div>
   );
 }

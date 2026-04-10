@@ -1,6 +1,8 @@
 import clickhouseClient from "@/lib/clients/clickhouse.client";
-import { AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
+import { AUSD_ADDRESS, AUSD_ADDRESS_LOWER, SUPPORTED_CHAIN_IDS } from "@/constants/chains";
 import { getLastBlockByChain } from "@/lib/services/ausd.service";
+import { env } from "@/lib/env";
+import { MISTI_BASE_URL } from "@/constants/global";
 import type {
   ChainBalance,
   ChainBalanceHistory,
@@ -13,19 +15,17 @@ interface BalanceResult {
   balance: string;
 }
 
-interface SnapshotResult {
-  chain_id: number;
-  block_number: string;
-  block_date: string;
-  delta: string;
+interface MistiBalanceHistoryEntry {
+  date: string;
+  balance: string;
 }
 
 export async function getWalletBalanceData(walletAddress: string): Promise<WalletBalanceData> {
   const normalizedAddress = walletAddress.toLowerCase();
 
-  const [balancesData, historyData, lastBlockData] = await Promise.all([
+  const [balancesData, historyByChain, lastBlockData] = await Promise.all([
     getWalletBalances(normalizedAddress),
-    getWalletBalanceHistory(normalizedAddress),
+    getBalanceHistoryAllChains(normalizedAddress),
     getLastBlockByChain(),
   ]);
 
@@ -38,25 +38,12 @@ export async function getWalletBalanceData(walletAddress: string): Promise<Walle
   });
 
   const history: ChainBalanceHistory[] = SUPPORTED_CHAIN_IDS.map((chainId) => {
-    const chainSnapshots = historyData
-      .filter((s) => s.chain_id === chainId)
-      .sort((a, b) => Number(a.block_number) - Number(b.block_number));
-
-    let runningTotal = BigInt(0);
-    const snapshots: BalanceSnapshot[] = chainSnapshots.map((s) => {
-      runningTotal += BigInt(s.delta);
-      return {
-        blockNumber: Number(s.block_number),
-        date: s.block_date,
-        delta: s.delta,
-        totalBalance: runningTotal.toString(),
-      };
-    });
-
-    return {
-      chainId,
-      snapshots,
-    };
+    const chainHistory = historyByChain.get(chainId) ?? [];
+    const snapshots: BalanceSnapshot[] = chainHistory.map((entry) => ({
+      date: entry.date,
+      balance: entry.balance,
+    }));
+    return { chainId, snapshots };
   });
 
   return {
@@ -89,26 +76,40 @@ async function getWalletBalances(walletAddress: string): Promise<BalanceResult[]
   return (await result.json()) as BalanceResult[];
 }
 
-async function getWalletBalanceHistory(walletAddress: string): Promise<SnapshotResult[]> {
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        chain_id,
-        toString(block_number) as block_number,
-        toString(date) as block_date,
-        toString(sum(delta)) as delta
-      FROM balance_snapshots FINAL
-      WHERE wallet_address = {walletAddress:FixedString(42)}
-        AND token_address = {tokenAddress:FixedString(42)}
-      GROUP BY chain_id, block_number, date
-      ORDER BY chain_id, block_number
-    `,
-    query_params: {
-      walletAddress,
-      tokenAddress: AUSD_ADDRESS_LOWER,
-    },
-    format: "JSONEachRow",
-  });
+async function getBalanceHistoryAllChains(
+  walletAddress: string
+): Promise<Map<number, MistiBalanceHistoryEntry[]>> {
+  const apiKey = env.MISTI_API_KEY;
 
-  return (await result.json()) as SnapshotResult[];
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 365);
+
+  const results = await Promise.all(
+    SUPPORTED_CHAIN_IDS.map(async (chainId) => {
+      const url = new URL(`${MISTI_BASE_URL}/erc20/balance-history`);
+      url.searchParams.set("chain_id", chainId.toString());
+      url.searchParams.set("token", AUSD_ADDRESS);
+      url.searchParams.set("wallet", walletAddress);
+      url.searchParams.set("from", startDate.toISOString().slice(0, 10));
+      url.searchParams.set("to", today.toISOString().slice(0, 10));
+
+      const res = await fetch(url, {
+        headers: { "x-api-key": apiKey },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Misti API error for chain ${chainId}: ${res.status} ${res.statusText}`);
+      }
+
+      const data = (await res.json()) as MistiBalanceHistoryEntry[];
+      return { chainId, data };
+    })
+  );
+
+  const map = new Map<number, MistiBalanceHistoryEntry[]>();
+  for (const { chainId, data } of results) {
+    map.set(chainId, data);
+  }
+  return map;
 }

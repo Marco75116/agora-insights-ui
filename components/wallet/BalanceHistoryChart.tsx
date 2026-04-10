@@ -26,7 +26,7 @@ export function BalanceHistoryChart({ data, walletAddress }: BalanceHistoryChart
 
   const chartData = data.snapshots.map((snapshot) => ({
     date: snapshot.date,
-    balance: parseTokenAmount(snapshot.totalBalance, AUSD_DECIMALS),
+    balance: parseTokenAmount(snapshot.balance, AUSD_DECIMALS),
   }));
 
   const chartConfig: ChartConfig = {
