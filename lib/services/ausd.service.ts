@@ -271,7 +271,7 @@ export async function getTransferStatsDaily(
   };
 }
 
-interface TotalSupplyDailyResult {
+interface MistiSupplyHistoryResult {
   date: string;
   total_supply: string;
 }
@@ -285,51 +285,32 @@ export async function getTotalSupplyDaily(
   filter: TotalSupplyDailyFilter
 ): Promise<TotalSupplyDailyResponse> {
   const { months = 1, chainId } = filter;
-  const days = months * 30;
-
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        toString(date) as date,
-        toString(sum(amount) OVER (PARTITION BY chain_id, token_address ORDER BY date)) as total_supply
-      FROM total_supply_daily FINAL
-      WHERE token_address = {tokenAddress:FixedString(42)}
-        AND chain_id = {chainId:UInt32}
-      ORDER BY date ASC
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-      chainId,
-    },
-    format: "JSONEachRow",
-  });
-
-  const allData = (await result.json()) as TotalSupplyDailyResult[];
+  const apiKey = env.MISTI_API_KEY;
 
   const today = new Date();
   const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - days);
+  startDate.setDate(startDate.getDate() - months * 30);
 
-  const supplyByDate = new Map(allData.map((row) => [row.date, row.total_supply]));
+  const url = new URL(`${MISTI_BASE_URL}/erc20/supply-history`);
+  url.searchParams.set("chain_id", chainId.toString());
+  url.searchParams.set("token", AUSD_ADDRESS);
+  url.searchParams.set("from", startDate.toISOString().slice(0, 10));
+  url.searchParams.set("to", today.toISOString().slice(0, 10));
 
-  let lastKnownSupply = "0";
-  for (const row of allData) {
-    if (row.date < startDate.toISOString().slice(0, 10)) {
-      lastKnownSupply = row.total_supply;
-    }
+  const res = await fetch(url, {
+    headers: { "x-api-key": apiKey },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Misti API error: ${res.status} ${res.statusText}`);
   }
 
-  const stats: DailyTotalSupply[] = [];
-  const current = new Date(startDate);
-  while (current <= today) {
-    const dateStr = current.toISOString().slice(0, 10);
-    const supply = supplyByDate.get(dateStr);
-    if (supply !== undefined) {
-      lastKnownSupply = supply;
-    }
-    stats.push({ date: dateStr, totalSupply: lastKnownSupply });
-    current.setDate(current.getDate() + 1);
-  }
+  const data = (await res.json()) as MistiSupplyHistoryResult[];
+
+  const stats: DailyTotalSupply[] = data.map((row) => ({
+    date: row.date,
+    totalSupply: row.total_supply,
+  }));
 
   return {
     stats,
