@@ -1,22 +1,13 @@
 import { cacheLife } from "next/cache";
 import { ChainBreakdownChart } from "@/components/analytics/ChainBreakdownChart";
-import type { AusdOverviewMetrics, ApiResponse } from "@/types/Analytics";
-import { env } from "@/lib/env";
+import { getAusdMetrics } from "@/lib/services/ausd.service";
 
-async function fetchAusdOverview(): Promise<AusdOverviewMetrics | null> {
+async function fetchAusdOverview() {
   "use cache";
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
   try {
-    const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/overview`);
-    const result: ApiResponse<AusdOverviewMetrics> = await response.json();
-
-    if (result.status === "error" || !result.data) {
-      console.error("[ChainBreakdownSection] API error:", result.message);
-      return null;
-    }
-
-    return result.data;
+    return await getAusdMetrics();
   } catch (error) {
     console.error("[ChainBreakdownSection] Fetch failed:", error);
     return null;

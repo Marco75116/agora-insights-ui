@@ -2,9 +2,9 @@ import { cacheLife } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChainSelect } from "@/components/analytics/ChainSelect";
 import { type ChainId } from "@/constants/chains";
-import type { TopHoldersResponse, ApiResponse } from "@/types/Analytics";
+import type { TopHoldersResponse } from "@/types/Analytics";
 import { TopHoldersTable } from "@/components/analytics/TopHoldersTable";
-import { env } from "@/lib/env";
+import { getTopHolders } from "@/lib/services/ausd.service";
 
 async function fetchTopHolders(
   chainId: ChainId,
@@ -14,19 +14,7 @@ async function fetchTopHolders(
   cacheLife({ stale: 300, revalidate: 60, expire: 3600 });
 
   try {
-    const url = new URL(`${env.NEXT_PUBLIC_BASE_URL}/api/ausd/top-holders`);
-    url.searchParams.set("limit", limit.toString());
-    url.searchParams.set("chainId", chainId.toString());
-
-    const response = await fetch(url);
-    const result: ApiResponse<TopHoldersResponse> = await response.json();
-
-    if (result.status === "error" || !result.data) {
-      console.error("[TopHoldersSection] API error:", result.message);
-      return null;
-    }
-
-    return result.data;
+    return await getTopHolders({ limit, chainId });
   } catch (error) {
     console.error("[TopHoldersSection] Fetch failed:", error);
     return null;

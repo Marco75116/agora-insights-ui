@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
@@ -26,8 +27,6 @@ interface TotalSupplyChartProps {
   supplyData: DailyTotalSupply[];
   chainId: ChainId;
   months: number;
-  onMonthsChange: (months: string) => void;
-  onChainChange: (chainId: string) => void;
 }
 
 function getChartConfig(chainId: ChainId): ChartConfig {
@@ -103,13 +102,19 @@ function CustomTooltip({ active, payload, chainId }: CustomTooltipProps) {
   );
 }
 
-export function TotalSupplyChart({
-  supplyData,
-  chainId,
-  months,
-  onMonthsChange,
-  onChainChange,
-}: TotalSupplyChartProps) {
+export function TotalSupplyChart({ supplyData, chainId, months }: TotalSupplyChartProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const updateParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(key, value);
+      router.push(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
   const chartConfig = useMemo(() => getChartConfig(chainId), [chainId]);
   const chainColor = CHAINS[chainId].color;
 
@@ -128,7 +133,7 @@ export function TotalSupplyChart({
             <CardDescription>Daily AUSD total supply</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Select value={months.toString()} onValueChange={onMonthsChange}>
+            <Select value={months.toString()} onValueChange={(v) => updateParam("supplyMonths", v)}>
               <SelectTrigger className="h-8 w-[140px]" aria-label="Select time period">
                 <SelectValue placeholder="Select period" />
               </SelectTrigger>
@@ -140,7 +145,10 @@ export function TotalSupplyChart({
                 ))}
               </SelectContent>
             </Select>
-            <Select value={chainId.toString()} onValueChange={onChainChange}>
+            <Select
+              value={chainId.toString()}
+              onValueChange={(v) => updateParam("supplyChainId", v)}
+            >
               <SelectTrigger className="h-8 w-[140px]" aria-label="Select chain">
                 <SelectValue />
               </SelectTrigger>
