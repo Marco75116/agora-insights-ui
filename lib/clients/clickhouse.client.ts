@@ -1,4 +1,5 @@
 import { createClient } from "@clickhouse/client";
+import { env } from "@/lib/env";
 
 function formatClickhouseUrl(url: string): string {
   if (url.startsWith("clickhouse://")) {
@@ -8,7 +9,7 @@ function formatClickhouseUrl(url: string): string {
 }
 
 export const clickhouseClient = createClient({
-  url: formatClickhouseUrl(process.env.CLICKHOUSE_URL ?? "http://default:default@localhost:8123"),
+  url: formatClickhouseUrl(env.CLICKHOUSE_URL),
 });
 
 export default clickhouseClient;
