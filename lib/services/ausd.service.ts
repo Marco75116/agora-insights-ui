@@ -101,64 +101,88 @@ async function getTotalSupplyByChain(): Promise<SupplyResult[]> {
 }
 
 async function getHoldersCountByChain(): Promise<HoldersResult[]> {
-  const result = await clickhouseClient.query({
-    query: `
-      SELECT
-        chain_id,
-        toString(count(DISTINCT wallet_address)) as holders_count
-      FROM balances FINAL
-      WHERE token_address = {tokenAddress:FixedString(42)}
-        AND amount > 0
-      GROUP BY chain_id
-    `,
-    query_params: {
-      tokenAddress: AUSD_ADDRESS_LOWER,
-    },
-    format: "JSONEachRow",
-  });
+  const apiKey = process.env.MISTI_API_KEY;
+  if (!apiKey) {
+    throw new Error("MISTI_API_KEY environment variable is not set");
+  }
 
-  return (await result.json()) as HoldersResult[];
+  const responses = await Promise.all(
+    SUPPORTED_CHAIN_IDS.map(async (chainId) => {
+      const url = new URL("https://api.misti.app/v1/erc20/holder-count");
+      url.searchParams.set("chain_id", chainId.toString());
+      url.searchParams.set("token", AUSD_ADDRESS);
+
+      const res = await fetch(url, {
+        headers: { "x-api-key": apiKey },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Misti API error for chain ${chainId}: ${res.status} ${res.statusText}`);
+      }
+
+      const data = (await res.json()) as {
+        token_address: string;
+        chain_id: number;
+        holder_count: number;
+      }[];
+
+      return data.map((item) => ({
+        chain_id: item.chain_id,
+        holders_count: item.holder_count.toString(),
+      }));
+    })
+  );
+
+  return responses.flat();
 }
 
 export async function getChainMetrics(chainId: ChainId): Promise<ChainMetrics> {
-  const [supplyResult, holdersResult] = await Promise.all([
-    clickhouseClient.query({
-      query: `
-        SELECT toString(sum(amount)) as total_supply
-        FROM balances FINAL
-        WHERE chain_id = {chainId:UInt32}
-          AND token_address = {tokenAddress:FixedString(42)}
-          AND amount > 0
-      `,
-      query_params: {
-        chainId,
-        tokenAddress: AUSD_ADDRESS_LOWER,
-      },
-      format: "JSONEachRow",
-    }),
-    clickhouseClient.query({
-      query: `
-        SELECT toString(count(DISTINCT wallet_address)) as holders_count
-        FROM balances FINAL
-        WHERE chain_id = {chainId:UInt32}
-          AND token_address = {tokenAddress:FixedString(42)}
-          AND amount > 0
-      `,
-      query_params: {
-        chainId,
-        tokenAddress: AUSD_ADDRESS_LOWER,
-      },
-      format: "JSONEachRow",
-    }),
+  const apiKey = process.env.MISTI_API_KEY;
+  if (!apiKey) {
+    throw new Error("MISTI_API_KEY environment variable is not set");
+  }
+
+  const supplyUrl = new URL("https://api.misti.app/v1/erc20/supply");
+  supplyUrl.searchParams.set("chain_id", chainId.toString());
+  supplyUrl.searchParams.set("token", AUSD_ADDRESS);
+
+  const holderCountUrl = new URL("https://api.misti.app/v1/erc20/holder-count");
+  holderCountUrl.searchParams.set("chain_id", chainId.toString());
+  holderCountUrl.searchParams.set("token", AUSD_ADDRESS);
+
+  const headers = { "x-api-key": apiKey };
+
+  const [supplyRes, holderCountRes] = await Promise.all([
+    fetch(supplyUrl, { headers }),
+    fetch(holderCountUrl, { headers }),
   ]);
 
-  const supply = (await supplyResult.json()) as Array<{ total_supply: string }>;
-  const holders = (await holdersResult.json()) as Array<{ holders_count: string }>;
+  if (!supplyRes.ok) {
+    throw new Error(
+      `Misti API error for supply on chain ${chainId}: ${supplyRes.status} ${supplyRes.statusText}`
+    );
+  }
+  if (!holderCountRes.ok) {
+    throw new Error(
+      `Misti API error for holder count on chain ${chainId}: ${holderCountRes.status} ${holderCountRes.statusText}`
+    );
+  }
+
+  const supplyData = (await supplyRes.json()) as {
+    token_address: string;
+    chain_id: number;
+    total_supply: string;
+  }[];
+  const holderCountData = (await holderCountRes.json()) as {
+    token_address: string;
+    chain_id: number;
+    holder_count: number;
+  }[];
 
   return {
     chainId,
-    totalSupply: supply[0]?.total_supply ?? "0",
-    holdersCount: parseInt(holders[0]?.holders_count ?? "0", 10),
+    totalSupply: supplyData[0]?.total_supply ?? "0",
+    holdersCount: holderCountData[0]?.holder_count ?? 0,
   };
 }
 
