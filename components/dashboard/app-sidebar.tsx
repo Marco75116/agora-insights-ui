@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Home, Mail } from "lucide-react";
+import { BarChart3, Home, LifeBuoy } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
@@ -69,14 +69,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t p-0">
         <a
           href="https://t.me/marcopoloo33"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 px-4 pt-4"
         >
-          <Mail className="size-5 shrink-0" aria-hidden="true" />
+          <LifeBuoy className="size-6 shrink-0" aria-hidden="true" />
           <span className="text-muted-foreground text-sm font-medium group-data-[collapsible=icon]:hidden">
             Contact
           </span>
@@ -86,7 +86,7 @@ export function AppSidebar() {
           href="https://app.misti.app"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 px-4 pb-4"
         >
           <Image
             src="/misti-logo.png"
