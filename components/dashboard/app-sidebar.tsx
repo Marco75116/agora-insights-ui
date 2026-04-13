@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Home, MessageCircle } from "lucide-react";
+import { BarChart3, Home, Mail } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
@@ -16,6 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 const navigationItems = [
   {
@@ -75,11 +76,12 @@ export function AppSidebar() {
           rel="noopener noreferrer"
           className="flex items-center gap-2"
         >
-          <MessageCircle className="size-5 shrink-0" aria-hidden="true" />
+          <Mail className="size-5 shrink-0" aria-hidden="true" />
           <span className="text-muted-foreground text-sm font-medium group-data-[collapsible=icon]:hidden">
             Contact
           </span>
         </a>
+        <Separator className="group-data-[collapsible=icon]:hidden" />
         <a
           href="https://app.misti.app"
           target="_blank"
