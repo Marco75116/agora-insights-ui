@@ -24,7 +24,7 @@ export function ChartSkeleton({ title, height = 200 }: ChartSkeletonProps) {
               className="h-4 w-4 animate-spin motion-reduce:animate-none"
               aria-hidden="true"
             />
-            <span>Loading chart\u2026</span>
+            <span>Loading chart</span>
           </div>
         </div>
       </CardContent>
