@@ -17,6 +17,7 @@ import {
   parseTokenAmount,
 } from "@/lib/helpers/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsCompactLayout } from "@/hooks/use-layout-width";
 
 interface ChainBreakdownChartProps {
   data: ChainMetrics[];
@@ -50,6 +51,7 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
   const isSupply = metric === "supply";
   const title = isSupply ? "Supply by Chain" : "Holders by Chain";
   const unit = isSupply ? "AUSD" : "holders";
+  const isCompact = useIsCompactLayout();
 
   const chartData = SUPPORTED_CHAIN_IDS.map((chainId) => {
     const chainMetrics = data.find((d) => d.chainId === chainId);
@@ -175,8 +177,14 @@ export function ChainBreakdownChart({ data, metric, isLoading }: ChainBreakdownC
                             style={{ backgroundColor: item.fill }}
                             aria-hidden="true"
                           />
-                          <span className="text-sm font-medium">{item.name}</span>
-                          <span className="text-muted-foreground text-xs">{item.shortName}</span>
+                          {!isCompact && (
+                            <>
+                              <span className="text-sm font-medium">{item.name}</span>
+                              <span className="text-muted-foreground text-xs">
+                                {item.shortName}
+                              </span>
+                            </>
+                          )}
                         </div>
                         <div className="flex items-center gap-4">
                           <span

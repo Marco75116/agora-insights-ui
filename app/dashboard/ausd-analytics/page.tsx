@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { ChainBreakdownSection } from "@/components/analytics/ChainBreakdownSection";
+import { ChainLegend } from "@/components/analytics/ChainLegend";
 import { TotalSupplySection } from "@/components/analytics/TotalSupplySection";
 import { TopHoldersSection } from "@/components/analytics/TopHoldersSection";
 import { AnalyticsLastUpdated } from "@/components/analytics/AnalyticsLastUpdated";
@@ -75,6 +76,8 @@ export default async function AusdAnalyticsPage({ searchParams }: PageProps) {
           <TopHoldersSection chainId={holdersChainId} />
         </Suspense>
       </div>
+
+      <ChainLegend />
 
       <Suspense fallback={<TotalSupplyFallback />}>
         <TotalSupplySection months={supplyMonths} chainId={supplyChainId} />
