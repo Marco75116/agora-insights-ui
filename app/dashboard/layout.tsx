@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { LayoutWidthProvider } from "@/hooks/use-layout-width";
 
 function truncateAddress(value: string) {
   if (/^0x[a-fA-F0-9]{40}$/.test(value)) {
@@ -82,7 +83,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <LayoutWidthProvider className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          {children}
+        </LayoutWidthProvider>
       </SidebarInset>
     </SidebarProvider>
   );
